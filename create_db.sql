@@ -1,9 +1,11 @@
+flush privileges;
 create DATABASE logmasimo;
 
 create user 'logmasimo'@'192.168.0.1' identified by 'log@masimo-iXie3ahl';
 
 GRANT ALL PRIVILEGES ON logmasimo . * TO 'logmasimo'@'192.168.0.1' identified by 'log@masimo-iXie3ahl';
 
+flush privileges;
 USE logmasimo;
 
 CREATE TABLE `data` (
@@ -21,3 +23,4 @@ CREATE TABLE `data` (
 	);
 show tables;
 describe data;
+flush privileges;
