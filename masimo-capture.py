@@ -34,14 +34,14 @@ import datetime
 class masimo:
 
     ser = None
-    conn = None
+    cnx = None
     serial_string = None
     masimo_type = None
 
     spo2 = None
     bpm = None
     pi = None
-    alm = "000000"
+    alarm = "000000"
     exc = "000000"
     exc1 = "000000"
 
@@ -84,16 +84,17 @@ class masimo:
         except Exception, e:
             print("error open serial port: " + str(e))
             sys.exit(1)
-        #setting up database connection
+
+        # setting up database Connection
         try:
-            self.conn = MySQLdb.connect(host= "localhost",
+            self.cnx = MySQLdb.connect(host= "192.168.0.1",
                                         user="logmasimo",
-                                        passwd="log123",
+                                        passwd="log@masimo-iXie3ahl",
                                         db="logmasimo")
         except MySQLdb.Error, e:
            print( "ERROR %d IN CONNECTION: %s" % (e.args[0], e.args[1]))
            sys.exit(2)
-        self.cur = self.conn.cursor()
+        self.cur = self.cnx.cursor()
 
         self.ser.flushInput()
         self.ser.flushOutput()
@@ -101,8 +102,8 @@ class masimo:
         self.ser.readline()
 
     def __del__(self):
-        if not self.conn is None:
-            self.conn.close()
+        if not self.cnx is None:
+            self.cnx.close()
         if not self.ser is None:
             self.ser.close()
 
@@ -143,10 +144,34 @@ class masimo:
         # If we have no data to record, then why record?
         if "-" in self.spo2 or "-" in self.bpm:
             return
-        self._print_data()
+        try:
+            self.cur.execute ("INSERT INTO data"
+    "(spo2, bpm, pi, alarm, exc, exc1,"
+    "exc_sensor_no, exc_sensor_defective, exc_low_perfusion,"
+    "exc_pulse_search, exc_interference, exc_sensor_off,"
+    "exc_ambient_light, exc_sensor_unrecognized, exc_low_signal_iq,"
+    "exc_masimo_set) VALUES("
+    "%d, %d, %f, %d, %d, %d,"
+    "%d, %d, %d,"
+    "%d, %d, %d,"
+    "%d, %d, %d,"
+    "%d)" %
+	(int(self.spo2), int(self.bpm), float(self.pi),
+		int(self.alarm,16), int(self.exc,16), int(self.exc1,16),
+		int(self.exc_sensor_no), int(self.exc_sensor_defective), int(self.exc_low_perfusion),
+		int(self.exc_pulse_search), int(self.exc_interference), int(self.exc_sensor_off),
+		int(self.exc_ambient_light), int(self.exc_sensor_unrecognized),
+		int(self.exc_low_signal_iq), int(self.exc_masimo_set)))
+            self.cnx.commit()
+	    # print "Data posted: " + self.cur._last_executed
+            # self._print_data()
+        except MySQLdb.Error, e:
+            print( "ERROR %d IN CONNECTION: %s" % (e.args[0], e.args[1]))
+            print( "Last query was: "+ self.cur._last_executed )
+            self._print_data()
 
     def _parse_alarm(self):
-        val = int(self.alm, 16)
+        val = int(self.alarm, 16)
 # SPO2: 097
 # BPM: 064
 # PI: 00.80
@@ -264,6 +289,7 @@ class main:
         self.m = masimo(t, term)
 
     def main(self):
+        print "Capturing data..:"
         while True:
             self.m.grab_data()
             self.m.parse_data()
