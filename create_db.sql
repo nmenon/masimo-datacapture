@@ -1,8 +1,8 @@
 create DATABASE logmasimo;
 
-create user 'logmasimo'@'*' identified by 'log@masimo-iXie3ahl';
+create user 'logmasimo'@'192.168.0.1' identified by 'log@masimo-iXie3ahl';
 
-GRANT ALL PRIVILEGES ON logmasimo . * TO 'logmasimo';
+GRANT ALL PRIVILEGES ON logmasimo . * TO 'logmasimo'@'192.168.0.1' identified by 'log@masimo-iXie3ahl';
 
 USE logmasimo;
 
