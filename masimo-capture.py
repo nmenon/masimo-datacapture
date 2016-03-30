@@ -279,12 +279,12 @@ class masimo:
         S = S.replace('%', ' ')
         ord = S.split(' ')
 
-        self.v_spo2 = MySQLdb.escape_string(ord[5])
-        self.v_bpm = MySQLdb.escape_string(ord[8])
-        self.v_pi = MySQLdb.escape_string(ord[10])
-        self.v_alarm = MySQLdb.escape_string(ord[30])
-        self.v_exc = MySQLdb.escape_string(ord[32])
-        self.v_exc1 = MySQLdb.escape_string(ord[34])
+        self.v_spo2 = MySQLdb.escape_string(ord[4])
+        self.v_bpm = MySQLdb.escape_string(ord[7])
+        self.v_pi = MySQLdb.escape_string(ord[9])
+        self.v_alarm = MySQLdb.escape_string(ord[29])
+        self.v_exc = MySQLdb.escape_string(ord[31])
+        self.v_exc1 = MySQLdb.escape_string(ord[33])
 
         self.spo2 = MySQLdb.escape_string(ord[5])
         self.bpm = MySQLdb.escape_string(ord[8])
