@@ -56,8 +56,9 @@ class masimo:
     exc_low_signal_iq = False
     exc_masimo_set = False
 
-
     parse = None
+
+    p_inc = 0
 
     # Setup the dict
     def __init__(self, t="rad8s1",term=None):
@@ -110,13 +111,61 @@ class masimo:
     def grab_data(self):
         self.serial_string = self.ser.readline().rstrip()
 
+    def is_format_valid(self):
+        # First verify that the strings are all proper in the right places..
+        if not self.v_spo2 is "SPO2":
+            raise Exception ('Data format error: SPO2 is: ' , self.v_spo2)
+
+        if not self.v_bpm is "BPM":
+            raise Exception ('Data format error: BPM is: ' , self.v_bpm)
+
+        if not self.v_pi is "PI":
+            raise Exception ('Data format error: PI is: ' , self.v_pi)
+
+        if not self.v_alarm is "ALARM":
+            raise Exception ('Data format error: ALARM is: ' , self.v_alarm)
+
+        if not self.v_exc is "EXC":
+            raise Exception ('Data format error: EXC is: ' , self.v_exc)
+
+        if not self.v_exc1 is "EXC1":
+            raise Exception ('Data format error: EXC1 is: ' , self.v_exc1)
+
+    def is_info_valid(self):
+        # Verify if the data is valid as well
+        # - SPO2, BPM, ALARM, EXC, EXC1 should be int
+        # - PI should be a float
+        try:
+            tmp = int(self.spo2)
+            tmp = int(self.bpm)
+            tmp1 = float(self.pi)
+            tmp = int(self.alarm,16)
+            tmp = int(self.exc,16)
+            tmp = int(self.exc1,16),
+        except Exception as err:
+            raise Exception('Data contents invalid',
+                            "SPO2=" + self.spo2 +
+                            "BPM=" + self.bpm +
+                            "PI=" + self.pi +
+                            "ALARM=" + self.alarm +
+                            "EXC=" + self.exc +
+                            "EXC1=" + self.exc1)
+
+    def is_data_valid(self):
+        self.is_format_valid()
+        self.is_info_valid()
+
     def parse_data(self):
         try:
             self.parse[self.masimo_type]()
         except Exception as err:
             raise Exception('Unsupported type?' , self.masimo_type + ': ' + str(err));
-        self._parse_alarm()
-        self._parse_exception()
+        try:
+            self.is_data_valid()
+            self._parse_alarm()
+            self._parse_exception()
+        except Exception as err:
+            print "Data invalid" + str(err)
 
 
     def _print_data(self):
@@ -146,17 +195,17 @@ class masimo:
             return
         try:
             self.cur.execute ("INSERT INTO data"
-    "(spo2, bpm, pi, alarm, exc, exc1,"
-    "exc_sensor_no, exc_sensor_defective, exc_low_perfusion,"
-    "exc_pulse_search, exc_interference, exc_sensor_off,"
-    "exc_ambient_light, exc_sensor_unrecognized, exc_low_signal_iq,"
-    "exc_masimo_set) VALUES("
-    "%d, %d, %f, %d, %d, %d,"
-    "%d, %d, %d,"
-    "%d, %d, %d,"
-    "%d, %d, %d,"
-    "%d)" %
-	(int(self.spo2), int(self.bpm), float(self.pi),
+            "(spo2, bpm, pi, alarm, exc, exc1,"
+            "exc_sensor_no, exc_sensor_defective, exc_low_perfusion,"
+            "exc_pulse_search, exc_interference, exc_sensor_off,"
+            "exc_ambient_light, exc_sensor_unrecognized, exc_low_signal_iq,"
+            "exc_masimo_set) VALUES("
+            "%d, %d, %f, %d, %d, %d,"
+            "%d, %d, %d,"
+            "%d, %d, %d,"
+            "%d, %d, %d,"
+            "%d)" %
+	        (int(self.spo2), int(self.bpm), float(self.pi),
 		int(self.alarm,16), int(self.exc,16), int(self.exc1,16),
 		int(self.exc_sensor_no), int(self.exc_sensor_defective), int(self.exc_low_perfusion),
 		int(self.exc_pulse_search), int(self.exc_interference), int(self.exc_sensor_off),
@@ -169,6 +218,11 @@ class masimo:
             print( "ERROR %d IN CONNECTION: %s" % (e.args[0], e.args[1]))
             print( "Last query was: "+ self.cur._last_executed )
             self._print_data()
+
+        self.p_inc = self.p_inc + 1
+        if self.p_inc is 10:
+            print ("Data(SPO2= %s BPM= %s Stored at: " %(self.spo2, self.bpm, datetime.datetime.now()))
+            self.p_inc = 0
 
     def _parse_alarm(self):
         val = int(self.alarm, 16)
@@ -215,6 +269,14 @@ class masimo:
         S = self.serial_string.replace('=', ' ')
         S = S.replace('%', ' ')
         ord = S.split(' ')
+
+        self.v_spo2 = MySQLdb.escape_string(ord[4])
+        self.v_bpm = MySQLdb.escape_string(ord[7])
+        self.v_pi = MySQLdb.escape_string(ord[9])
+        self.v_alarm = MySQLdb.escape_string(ord[22])
+        self.v_exc = MySQLdb.escape_string(ord[24])
+        self.v_exc1 = "EXC1"
+
         self.spo2 = MySQLdb.escape_string(ord[5])
         self.bpm = MySQLdb.escape_string(ord[8])
         self.pi = MySQLdb.escape_string(ord[10])
@@ -227,6 +289,14 @@ class masimo:
         S = self.serial_string.replace('=', ' ')
         S = S.replace('%', ' ')
         ord = S.split(' ')
+
+        self.v_spo2 = MySQLdb.escape_string(ord[5])
+        self.v_bpm = MySQLdb.escape_string(ord[8])
+        self.v_pi = MySQLdb.escape_string(ord[10])
+        self.v_alarm = MySQLdb.escape_string(ord[30])
+        self.v_exc = MySQLdb.escape_string(ord[32])
+        self.v_exc1 = MySQLdb.escape_string(ord[34])
+
         self.spo2 = MySQLdb.escape_string(ord[5])
         self.bpm = MySQLdb.escape_string(ord[8])
         self.pi = MySQLdb.escape_string(ord[10])
@@ -292,8 +362,13 @@ class main:
         print "Capturing data..:"
         while True:
             self.m.grab_data()
-            self.m.parse_data()
-            self.m.store_data()
+            # The following two steps may fail at times.. just move on..
+            try:
+                self.m.parse_data()
+                self.m.store_data()
+            except Exception as err:
+                print "Exception noticed: " + str(err)
+
 
 if __name__ == "__main__":
     m = main()
