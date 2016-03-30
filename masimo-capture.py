@@ -162,13 +162,14 @@ class masimo:
             raise Exception('Unsupported type?' , self.masimo_type + ': ' + str(err));
         try:
             self.is_data_valid()
-            self._parse_alarm()
-            self._parse_exception()
         except Exception as err:
             print "Data invalid" + str(err)
 
 
     def _print_data(self):
+        # Enable the following for printing purposes..
+        self._parse_alarm()
+        self._parse_exception()
         print "SPO2: " + self.spo2
         print "BPM: " + self.bpm
         print "PI: " + self.pi
@@ -195,22 +196,10 @@ class masimo:
             return
         try:
             self.cur.execute ("INSERT INTO data"
-            "(spo2, bpm, pi, alarm, exc, exc1,"
-            "exc_sensor_no, exc_sensor_defective, exc_low_perfusion,"
-            "exc_pulse_search, exc_interference, exc_sensor_off,"
-            "exc_ambient_light, exc_sensor_unrecognized, exc_low_signal_iq,"
-            "exc_masimo_set) VALUES("
-            "%d, %d, %f, %d, %d, %d,"
-            "%d, %d, %d,"
-            "%d, %d, %d,"
-            "%d, %d, %d,"
-            "%d)" %
+            "(spo2, bpm, pi, alarm, exc, exc1)"
+            "VALUES(%d, %d, %f, %d, %d)" %
 	        (int(self.spo2), int(self.bpm), float(self.pi),
-		int(self.alarm,16), int(self.exc,16), int(self.exc1,16),
-		int(self.exc_sensor_no), int(self.exc_sensor_defective), int(self.exc_low_perfusion),
-		int(self.exc_pulse_search), int(self.exc_interference), int(self.exc_sensor_off),
-		int(self.exc_ambient_light), int(self.exc_sensor_unrecognized),
-		int(self.exc_low_signal_iq), int(self.exc_masimo_set)))
+		int(self.alarm,16), int(self.exc,16), int(self.exc1,16)))
             self.cnx.commit()
 	    # print "Data posted: " + self.cur._last_executed
             # self._print_data()
