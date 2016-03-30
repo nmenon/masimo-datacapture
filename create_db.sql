@@ -9,6 +9,7 @@ flush privileges;
 USE logmasimo;
 
 CREATE TABLE `data` (
+	`id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Unique Identifier',
 	`ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Time stamp of data',
 	`spo2` int(3) DEFAULT 0 COMMENT 'O2 % (peripheral capillary oxygen saturation)',
 	`bpm` int(3) DEFAULT 0 COMMENT 'Beats Per Minute',
@@ -16,7 +17,7 @@ CREATE TABLE `data` (
 	`alarm` int(11) DEFAULT 0 COMMENT 'Raw Alarm value',
 	`exc` int(11) DEFAULT 0 COMMENT 'Raw Exception',
 	`exc1` int(11) DEFAULT 0 COMMENT 'Raw Exception 1',
-	primary key(ts),
+	primary key(id, ts),
 	key(spo2),
 	key(bpm)
 	);
