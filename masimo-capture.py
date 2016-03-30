@@ -113,22 +113,22 @@ class masimo:
 
     def is_format_valid(self):
         # First verify that the strings are all proper in the right places..
-        if not self.v_spo2 is "SPO2":
+        if self.v_spo2 != 'SPO2':
             raise Exception ('Data format error: SPO2 is: ' , self.v_spo2)
 
-        if not self.v_bpm is "BPM":
+        if self.v_bpm != 'BPM':
             raise Exception ('Data format error: BPM is: ' , self.v_bpm)
 
-        if not self.v_pi is "PI":
+        if self.v_pi != "PI":
             raise Exception ('Data format error: PI is: ' , self.v_pi)
 
-        if not self.v_alarm is "ALARM":
+        if self.v_alarm != "ALARM":
             raise Exception ('Data format error: ALARM is: ' , self.v_alarm)
 
-        if not self.v_exc is "EXC":
+        if self.v_exc != "EXC":
             raise Exception ('Data format error: EXC is: ' , self.v_exc)
 
-        if not self.v_exc1 is "EXC1":
+        if self.v_exc1 != "EXC1":
             raise Exception ('Data format error: EXC1 is: ' , self.v_exc1)
 
     def is_info_valid(self):
