@@ -197,7 +197,7 @@ class masimo:
         try:
             self.cur.execute ("INSERT INTO data"
             "(spo2, bpm, pi, alarm, exc, exc1)"
-            "VALUES(%d, %d, %f, %d, %d)" %
+            "VALUES(%d, %d, %f, %d, %d, %d)" %
 	        (int(self.spo2), int(self.bpm), float(self.pi),
 		int(self.alarm,16), int(self.exc,16), int(self.exc1,16)))
             self.cnx.commit()
@@ -210,7 +210,7 @@ class masimo:
 
         self.p_inc = self.p_inc + 1
         if self.p_inc is 10:
-            print ("Data(SPO2= %s BPM= %s Stored at: " %(self.spo2, self.bpm, datetime.datetime.now()))
+            print ("Data(SPO2= %s BPM= %s) Stored at: %s" %(self.spo2, self.bpm, datetime.datetime.now()))
             self.p_inc = 0
 
     def _parse_alarm(self):
