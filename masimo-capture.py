@@ -309,8 +309,11 @@ class main:
     term = None
 
     def usage(self):
-        print "-t type -d device"
-        print self.supported_types
+        print "Usage:"
+        print sys.argv[0] + " -t type -d device"
+        print "Where:"
+        print "\t-t: type of Masimo. One of: " + str(self.supported_types)
+        print "\t-d: serial_port device like /dev/ttyUSB0"
 
     def __init__(self):
         try:
