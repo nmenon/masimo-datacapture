@@ -305,6 +305,8 @@ class masimo:
 class main:
     supported_types=[ "rad8s1" , "rad7cs1", "rad7bs1" ]
     m = None
+    t = None
+    term = None
 
     def usage(self):
         print "-t type -d device"
@@ -320,8 +322,8 @@ class main:
             self.usage()
             sys.exit(err)
 
-        t = "rad8s1"
-        term = None
+        self.t = "rad8s1"
+        self.term = None
 
         for o, a in opts:
             if o in ('-h', "--help"):
@@ -329,23 +331,23 @@ class main:
                 self.usage()
                 sys.exit(0)
             elif o in ('-t', "--type"):
-                t = a
+                self.t = a
             elif o in ('-d', "--device"):
-                term = a
+                self.term = a
             else:
                 print o
                 assert False, "unhandled Option"
 
-        if term is None:
+        if self.term is None:
             print "Need terminal device and type of masimo"
             self.usage()
             sys.exit(0)
-        if not t in self.supported_types:
+        if not self.t in self.supported_types:
             print "need a valid supported type"
             self.usage()
             sys.exit(0)
 
-        self.m = masimo(t, term)
+        self.m = masimo(self.t, self.term)
 
     def main(self):
         print "Capturing data..:"
