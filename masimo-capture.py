@@ -62,6 +62,8 @@ class masimo:
 
     p_inc = 0
 
+    mysql_table = None
+
     # Setup the dict
     def __init__(self, t = "rad8s1", term = None,
             host = "192.168.0.1",
@@ -340,7 +342,7 @@ class main:
             self.mysql_usr = self.f.mysql.user
             self.mysql_psswd = self.f.mysql.password
             self.mysql_db = self.f.mysql.db
-            self.mysql_table_name = self.f.mysql.table_name
+            self.mysql_table = self.f.mysql.table_name
         except Exception as err:
             raise Exception('Missing/Invalid params in mysql config file:',
                             str(err))
