@@ -388,6 +388,9 @@ class main:
 
         if self.f is not None:
             self.import_config()
+        else:
+            raise Exception('Missing config file',
+                            'Use "' + sys.argv[0] + ' -h" for help')
 
         if self.term is None:
             print "Need terminal device and type of masimo"
