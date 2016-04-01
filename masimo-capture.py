@@ -1,18 +1,18 @@
 #!/usr/bin/python
 # Copyright (c) 2016, Nishanth Menon
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
 # met:
-# 
+#
 # 1. Redistributions of source code must retain the above copyright
 # notice, this list of conditions and the following disclaimer.
-# 
+#
 # 2. Redistributions in binary form must reproduce the above copyright
 # notice, this list of conditions and the following disclaimer in the
 # documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -25,13 +25,19 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Inspired by: http://www.jeroenbaten.nl/cardio-oxygen-saturation-monitoring-home/
+# Inspired by:
+# http://www.jeroenbaten.nl/cardio-oxygen-saturation-monitoring-home/
 
-import sys, serial, time, os, getopt
+import sys
+import serial
+import time
+import os
+import getopt
 import MySQLdb
 import datetime
 # sudo pip install config
 from config import Config
+
 
 class masimo:
 
@@ -65,47 +71,47 @@ class masimo:
     mysql_table = None
 
     # Setup the dict
-    def __init__(self, t = "rad8s1", term = None,
-            host = "192.168.0.1",
-            user = "logmasimo", passwd = "log@masimo-iXie3ahl",
-            db = "logmasimo", table = "data"):
+    def __init__(self, t="rad8s1", term=None,
+                 host="192.168.0.1",
+                 user="logmasimo", passwd="log@masimo-iXie3ahl",
+                 db="logmasimo", table="data"):
         self.masimo_type = t
 
         self.ser = serial.Serial()
-        self.ser.port=term
+        self.ser.port = term
         self.ser.baudrate = 9600
-        self.ser.bytesize = serial.EIGHTBITS #number of bits per bytes
-        self.ser.parity = serial.PARITY_NONE #set parity check: no parity
-        self.ser.stopbits = serial.STOPBITS_ONE #number of stop bits
-        self.ser.timeout = None          #block read
-        self.ser.xonxoff = False     #disable software flow control
-        self.ser.rtscts = False     #disable hardware (RTS/CTS) flow control
-        self.ser.dsrdtr = False       #disable hardware (DSR/DTR) flow control
-        self.ser.writeTimeout = 2     #timeout for write
+        self.ser.bytesize = serial.EIGHTBITS  # number of bits per bytes
+        self.ser.parity = serial.PARITY_NONE  # set parity check: no parity
+        self.ser.stopbits = serial.STOPBITS_ONE  # number of stop bits
+        self.ser.timeout = None  # block read
+        self.ser.xonxoff = False  # disable software flow control
+        self.ser.rtscts = False  # disable hardware (RTS/CTS) flow control
+        self.ser.dsrdtr = False  # disable hardware (DSR/DTR) flow control
+        self.ser.writeTimeout = 2  # timeout for write
 
         self.mysql_table = table
 
         self.parse = {
-            'rad8s1' : self._parse_rad8_serial_1,
-            'rad7cs1' : self._parse_rad7_color_serial_1,
-            'radbs1' : self._parse_rad_7_blue_serial_1
+            'rad8s1': self._parse_rad8_serial_1,
+            'rad7cs1': self._parse_rad7_color_serial_1,
+            'radbs1': self._parse_rad_7_blue_serial_1
         }
 
         try:
-           self.ser.open()
-        except Exception, e:
+            self.ser.open()
+        except Exception as e:
             print("error open serial port: " + str(e))
             sys.exit(1)
 
         # setting up database Connection
         try:
             self.cnx = MySQLdb.connect(host=host,
-                                        user=user,
-                                        passwd=passwd,
-                                        db=db)
-        except MySQLdb.Error, e:
-           print( "ERROR %d IN CONNECTION: %s" % (e.args[0], e.args[1]))
-           sys.exit(2)
+                                       user=user,
+                                       passwd=passwd,
+                                       db=db)
+        except MySQLdb.Error as e:
+            print("ERROR %d IN CONNECTION: %s" % (e.args[0], e.args[1]))
+            sys.exit(2)
         self.cur = self.cnx.cursor()
 
         self.ser.flushInput()
@@ -125,22 +131,22 @@ class masimo:
     def is_format_valid(self):
         # First verify that the strings are all proper in the right places..
         if self.v_spo2 != 'SPO2':
-            raise Exception ('Data format error: SPO2 is: ' , self.v_spo2)
+            raise Exception('Data format error: SPO2 is: ', self.v_spo2)
 
         if self.v_bpm != 'BPM':
-            raise Exception ('Data format error: BPM is: ' , self.v_bpm)
+            raise Exception('Data format error: BPM is: ', self.v_bpm)
 
         if self.v_pi != "PI":
-            raise Exception ('Data format error: PI is: ' , self.v_pi)
+            raise Exception('Data format error: PI is: ', self.v_pi)
 
         if self.v_alarm != "ALARM":
-            raise Exception ('Data format error: ALARM is: ' , self.v_alarm)
+            raise Exception('Data format error: ALARM is: ', self.v_alarm)
 
         if self.v_exc != "EXC":
-            raise Exception ('Data format error: EXC is: ' , self.v_exc)
+            raise Exception('Data format error: EXC is: ', self.v_exc)
 
         if self.v_exc1 != "EXC1":
-            raise Exception ('Data format error: EXC1 is: ' , self.v_exc1)
+            raise Exception('Data format error: EXC1 is: ', self.v_exc1)
 
     def is_info_valid(self):
         # Verify if the data is valid as well
@@ -150,9 +156,9 @@ class masimo:
             tmp = int(self.spo2)
             tmp = int(self.bpm)
             tmp1 = float(self.pi)
-            tmp = int(self.alarm,16)
-            tmp = int(self.exc,16)
-            tmp = int(self.exc1,16),
+            tmp = int(self.alarm, 16)
+            tmp = int(self.exc, 16)
+            tmp = int(self.exc1, 16),
         except Exception as err:
             raise Exception('Data contents invalid',
                             "SPO2=" + self.spo2 +
@@ -170,12 +176,13 @@ class masimo:
         try:
             self.parse[self.masimo_type]()
         except Exception as err:
-            raise Exception('Unsupported type?' , self.masimo_type + ': ' + str(err));
+            raise Exception(
+                'Unsupported type?',
+                self.masimo_type + ': ' + str(err))
         try:
             self.is_data_valid()
         except Exception as err:
             print "Data invalid" + str(err)
-
 
     def _print_data(self):
         # Enable the following for printing purposes..
@@ -187,42 +194,48 @@ class masimo:
         print "ALARM: " + self.alarm
         print "EXCEPTION: " + self.exc
         print "EXCEPTION1: " + self.exc1
-	print "Exception Decode: "
+        print "Exception Decode: "
         print "No Sensor: " + str(self.exc_sensor_no)
-	print "Sensor Defective: " + str(self.exc_sensor_defective)
-	print "Low Perfusion: " + str(self.exc_low_perfusion)
-	print "Pulse Search: " + str(self.exc_pulse_search)
-	print "Interference: " + str(self.exc_interference)
-	print "Sensor OFF: " + str(self.exc_sensor_off)
-	print "Ambient Light: " + str(self.exc_ambient_light)
-	print "Sensor Unrecognized: " + str(self.exc_sensor_unrecognized)
-	print "Low Signal IQ: " + str(self.exc_low_signal_iq)
-	print "Masimo Set: " + str(self.exc_masimo_set)
+        print "Sensor Defective: " + str(self.exc_sensor_defective)
+        print "Low Perfusion: " + str(self.exc_low_perfusion)
+        print "Pulse Search: " + str(self.exc_pulse_search)
+        print "Interference: " + str(self.exc_interference)
+        print "Sensor OFF: " + str(self.exc_sensor_off)
+        print "Ambient Light: " + str(self.exc_ambient_light)
+        print "Sensor Unrecognized: " + str(self.exc_sensor_unrecognized)
+        print "Low Signal IQ: " + str(self.exc_low_signal_iq)
+        print "Masimo Set: " + str(self.exc_masimo_set)
 
     def store_data(self):
-        #print self.serial_string
+        # print self.serial_string
 
         # If we have no data to record, then why record?
         if "-" in self.spo2 or "-" in self.bpm:
             return
         try:
-            self.cur.execute ("INSERT INTO %s"
-            "(spo2, bpm, pi, alarm, exc, exc1)"
-            "VALUES(%d, %d, %f, %d, %d, %d)" %
-	        (self.mysql_table,
-                 int(self.spo2), int(self.bpm), float(self.pi),
-		 int(self.alarm,16), int(self.exc,16), int(self.exc1,16)))
+            self.cur.execute(
+                "INSERT INTO %s"
+                "(spo2, bpm, pi, alarm, exc, exc1)"
+                "VALUES(%d, %d, %f, %d, %d, %d)" %
+                (self.mysql_table, int(
+                    self.spo2), int(
+                    self.bpm), float(
+                    self.pi), int(
+                    self.alarm, 16), int(
+                        self.exc, 16), int(
+                            self.exc1, 16)))
             self.cnx.commit()
-	    # print "Data posted: " + self.cur._last_executed
+            # print "Data posted: " + self.cur._last_executed
             # self._print_data()
-        except MySQLdb.Error, e:
-            print( "ERROR %d IN CONNECTION: %s" % (e.args[0], e.args[1]))
-            print( "Last query was: "+ self.cur._last_executed )
+        except MySQLdb.Error as e:
+            print("ERROR %d IN CONNECTION: %s" % (e.args[0], e.args[1]))
+            print("Last query was: " + self.cur._last_executed)
             self._print_data()
 
         self.p_inc = self.p_inc + 1
         if self.p_inc is 10:
-            print ("Data(SPO2= %s BPM= %s) Stored at: %s" %(self.spo2, self.bpm, datetime.datetime.now()))
+            print ("Data(SPO2= %s BPM= %s) Stored at: %s" %
+                   (self.spo2, self.bpm, datetime.datetime.now()))
             self.p_inc = 0
 
     def _parse_alarm(self):
@@ -266,7 +279,8 @@ class masimo:
         self.exc_masimo_set = True if val & (8 << 8) else False
 
     def _parse_rad8_serial_1(self):
-	# 03/19/16 13:37:12 SN=0000093112 SPO2=---% BPM=---% DESAT=-- PIDELTA=+-- ALARM=0000 EXC=000001
+        # 03/19/16 13:37:12 SN=0000093112 SPO2=---% BPM=---% DESAT=--
+        # PIDELTA=+-- ALARM=0000 EXC=000001
         S = self.serial_string.replace('=', ' ')
         S = S.replace('%', ' ')
         ord = S.split(' ')
@@ -286,7 +300,9 @@ class masimo:
         self.exc1 = MySQLdb.escape_string("00000000")
 
     def _parse_rad7_color_serial_1(self):
-	# 03/17/16 19:19:36 SN=---------- SPO2=098% BPM=123 PI=00.55 SPCO=--% SPMET=--.-% SPHB=--.- SPOC=-- RESVD=--- DESAT=-- PIDELTA=+-- PVI=--- ALARM=000000 EXC=0000C00 EXC1=00000000
+        # 03/17/16 19:19:36 SN=---------- SPO2=098% BPM=123 PI=00.55 SPCO=--%
+        # SPMET=--.-% SPHB=--.- SPOC=-- RESVD=--- DESAT=-- PIDELTA=+-- PVI=---
+        # ALARM=000000 EXC=0000C00 EXC1=00000000
         S = self.serial_string.replace('=', ' ')
         S = S.replace('%', ' ')
         ord = S.split(' ')
@@ -308,14 +324,15 @@ class masimo:
         self.exc1 = MySQLdb.escape_string(ord[34])
 
     def _parse_rad_7_blue_serial_1(self):
-	# http://www.infiniti.se/upload/Servicemanual/Masimo/SM_EN_RADICA7_Radical-7%20Service%20manual%20rev.A.pdf
-	# 05/15/07 08:12:21 SN=0000070986 SPO2=---% BPM=--- PI=--.--% SPCO=--.-% SPMET=--.-% DESAT=-- PIDELTA=+-- PVI=--- ALARM=0000 EXC=000000 
+        # http://www.infiniti.se/upload/Servicemanual/Masimo/SM_EN_RADICA7_Radical-7%20Service%20manual%20rev.A.pdf
+        # 05/15/07 08:12:21 SN=0000070986 SPO2=---% BPM=--- PI=--.--%
+        # SPCO=--.-% SPMET=--.-% DESAT=-- PIDELTA=+-- PVI=--- ALARM=0000
+        # EXC=000000
         raise Exception('To be Implemented')
 
 
-
 class main:
-    supported_types=[ "rad8s1" , "rad7cs1", "rad7bs1" ]
+    supported_types = ["rad8s1", "rad7cs1", "rad7bs1"]
     m = None
     t = None
     term = None
@@ -358,9 +375,10 @@ class main:
 
     def __init__(self):
         try:
-            opts, args = getopt.getopt( sys.argv[1:],
-                    "ht:d:c:",
-                    ["help",  "type=", "device=", "config_file="])
+            opts, args = getopt.getopt(
+                sys.argv[
+                    1:], "ht:d:c:", [
+                    "help", "type=", "device=", "config_file="])
         except getopt.GetoptError as err:
             print str(err)
             self.usage()
@@ -398,18 +416,18 @@ class main:
             print "Need terminal device and type of masimo"
             self.usage()
             sys.exit(0)
-        if not self.t in self.supported_types:
+        if self.t not in self.supported_types:
             print "need a valid supported type"
             self.usage()
             sys.exit(0)
 
-        self.m = masimo(t = self.t,
-                        term = self.term,
-                        host = self.mysql_host,
-                        user = self.mysql_usr,
-                        passwd = self.mysql_psswd,
-                        db = self.mysql_db,
-                        table = self.mysql_table);
+        self.m = masimo(t=self.t,
+                        term=self.term,
+                        host=self.mysql_host,
+                        user=self.mysql_usr,
+                        passwd=self.mysql_psswd,
+                        db=self.mysql_db,
+                        table=self.mysql_table)
 
     def main(self):
         print "Capturing data..:"
