@@ -30,6 +30,8 @@
 import sys, serial, time, os, getopt
 import MySQLdb
 import datetime
+# sudo pip install config
+from config import Config
 
 class masimo:
 
@@ -61,8 +63,12 @@ class masimo:
     p_inc = 0
 
     # Setup the dict
-    def __init__(self, t="rad8s1",term=None):
+    def __init__(self, t = "rad8s1", term = None,
+            host = "192.168.0.1",
+            user = "logmasimo", passwd = "log@masimo-iXie3ahl",
+            db = "logmasimo", table = "data"):
         self.masimo_type = t
+
         self.ser = serial.Serial()
         self.ser.port=term
         self.ser.baudrate = 9600
@@ -74,6 +80,9 @@ class masimo:
         self.ser.rtscts = False     #disable hardware (RTS/CTS) flow control
         self.ser.dsrdtr = False       #disable hardware (DSR/DTR) flow control
         self.ser.writeTimeout = 2     #timeout for write
+
+        self.mysql_table = table
+
         self.parse = {
             'rad8s1' : self._parse_rad8_serial_1,
             'rad7cs1' : self._parse_rad7_color_serial_1,
@@ -88,10 +97,10 @@ class masimo:
 
         # setting up database Connection
         try:
-            self.cnx = MySQLdb.connect(host= "192.168.0.1",
-                                        user="logmasimo",
-                                        passwd="log@masimo-iXie3ahl",
-                                        db="logmasimo")
+            self.cnx = MySQLdb.connect(host=host,
+                                        user=user,
+                                        passwd=passwd,
+                                        db=db)
         except MySQLdb.Error, e:
            print( "ERROR %d IN CONNECTION: %s" % (e.args[0], e.args[1]))
            sys.exit(2)
@@ -195,11 +204,12 @@ class masimo:
         if "-" in self.spo2 or "-" in self.bpm:
             return
         try:
-            self.cur.execute ("INSERT INTO data"
+            self.cur.execute ("INSERT INTO %s"
             "(spo2, bpm, pi, alarm, exc, exc1)"
             "VALUES(%d, %d, %f, %d, %d, %d)" %
-	        (int(self.spo2), int(self.bpm), float(self.pi),
-		int(self.alarm,16), int(self.exc,16), int(self.exc1,16)))
+	        (self.mysql_table,
+                 int(self.spo2), int(self.bpm), float(self.pi),
+		 int(self.alarm,16), int(self.exc,16), int(self.exc1,16)))
             self.cnx.commit()
 	    # print "Data posted: " + self.cur._last_executed
             # self._print_data()
@@ -215,32 +225,32 @@ class masimo:
 
     def _parse_alarm(self):
         val = int(self.alarm, 16)
-# SPO2: 097
-# BPM: 064
-# PI: 00.80
-# ALARM: 000018
+        # SPO2: 097
+        # BPM: 064
+        # PI: 00.80
+        # ALARM: 000018
         return
 
     def _parse_exception(self):
-# Source: http://www.ontvep.ca/pdf/Masimo-Rad-8-User-Manual.pdf
-# Trend Data format
-# The exceptions are displayed as a 3 digit, ASCII encoded, hexadecimal
-# value. The binary bits of the hexadecimal value are encoded as follows:
-# 000 = Normal operation; no exceptions
-# 001 = No Sensor
-# 002 = Defective Sensor
-# 004 = Low Perfusion
-# 008 = Pulse Search
-# 010 = Interference
-# 020 = Sensor Off
-# 040 = Ambient Light
-# 080 = Unrecognized Sensor
-# 100 = reserved
-# 200 = reserved
-# 400 = Low Signal IQ
-# 800 = Masimo SET. This flag means the algorithm is running in full
-# SET mode. It requires a SET sensor and needs to acquire some
-# clean data for this flag to be set
+        # Source: http://www.ontvep.ca/pdf/Masimo-Rad-8-User-Manual.pdf
+        # Trend Data format
+        # The exceptions are displayed as a 3 digit, ASCII encoded, hexadecimal
+        # value. The binary bits of the hexadecimal value are encoded as follows:
+        # 000 = Normal operation; no exceptions
+        # 001 = No Sensor
+        # 002 = Defective Sensor
+        # 004 = Low Perfusion
+        # 008 = Pulse Search
+        # 010 = Interference
+        # 020 = Sensor Off
+        # 040 = Ambient Light
+        # 080 = Unrecognized Sensor
+        # 100 = reserved
+        # 200 = reserved
+        # 400 = Low Signal IQ
+        # 800 = Masimo SET. This flag means the algorithm is running in full
+        # SET mode. It requires a SET sensor and needs to acquire some
+        # clean data for this flag to be set
         val = int(self.exc, 16)
         self.exc_sensor_no = True if val & 1 else False
         self.exc_sensor_defective = True if val & 2 else False
@@ -307,19 +317,48 @@ class main:
     m = None
     t = None
     term = None
+    f = None
+    mysql_host = None
+    mysql_usr = None
+    mysql_psswd = None
+    mysql_db = None
+    mysql_table = None
 
     def usage(self):
         print "Usage:"
-        print sys.argv[0] + " -t type -d device"
+        print sys.argv[0] + " -t type -d device -c config_file"
         print "Where:"
         print "\t-t: type of Masimo. One of: " + str(self.supported_types)
         print "\t-d: serial_port device like /dev/ttyUSB0"
+        print "\t-c config_file (See config.cfg for example)"
+        print "\t\t NOTE: -t and -d will override settings in config file"
+
+    def import_config(self):
+        # See https://www.red-dove.com/config-doc/
+        try:
+            self.mysql_host = self.f.mysql.host
+            self.mysql_usr = self.f.mysql.user
+            self.mysql_psswd = self.f.mysql.password
+            self.mysql_db = self.f.mysql.db
+            self.mysql_table_name = self.f.mysql.table_name
+        except Exception as err:
+            raise Exception('Missing/Invalid params in mysql config file:',
+                            str(err))
+        # Optional Properties
+        try:
+            self.term = self.f.serial_port
+        except Exception as err:
+            self.term = None
+        try:
+            self.t = self.f.masimo_type
+        except Exception as err:
+            self.t = "rad8s1"
 
     def __init__(self):
         try:
             opts, args = getopt.getopt( sys.argv[1:],
-                    "ht:d:",
-                    ["help",  "type=", "device="])
+                    "ht:d:c:",
+                    ["help",  "type=", "device=", "config_file="])
         except getopt.GetoptError as err:
             print str(err)
             self.usage()
@@ -337,9 +376,18 @@ class main:
                 self.t = a
             elif o in ('-d', "--device"):
                 self.term = a
+            elif o in ('-c', "--config_file"):
+                try:
+                    self.f = Config(a)
+                except Exception as err:
+                    raise Exception('Using Config file "' + a + '" Failed: ',
+                                    str(err))
             else:
                 print o
                 assert False, "unhandled Option"
+
+        if self.f is not None:
+            self.import_config()
 
         if self.term is None:
             print "Need terminal device and type of masimo"
@@ -350,7 +398,13 @@ class main:
             self.usage()
             sys.exit(0)
 
-        self.m = masimo(self.t, self.term)
+        self.m = masimo(t = self.t,
+                        term = self.term,
+                        host = self.mysql_host,
+                        user = self.mysql_usr,
+                        passwd = self.mysql_psswd,
+                        db = self.mysql_db,
+                        table = self.mysql_table);
 
     def main(self):
         print "Capturing data..:"
