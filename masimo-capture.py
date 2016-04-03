@@ -38,7 +38,7 @@ import datetime
 # sudo pip install config
 from config import Config
 
-class datastore:
+class datastore(object):
     spo2 = None
     bpm = None
     pi = None
@@ -63,10 +63,66 @@ class datastore:
     exc_low_signal_iq = False
     exc_masimo_set = False
 
+    def parse_config(self, f):
+        return
+
     def initalize(self):
         return
+
+    def connect(self):
+        return
+
     def store_data(self):
         return
+
+class datastore_mysql(datastore):
+    mysql_host = None
+    mysql_usr = None
+    mysql_psswd = None
+    mysql_db = None
+    mysql_table = None
+
+    cnx = None
+    cur = None
+
+    def parse_config(self, f):
+        self.mysql_host = f.mysql.host
+        self.mysql_usr = f.mysql.user
+        self.mysql_psswd = f.mysql.password
+        self.mysql_db = f.mysql.db
+        self.mysql_table = f.mysql.table_name
+
+    def connect(self):
+        # setting up database Connection
+        try:
+            self.cnx = MySQLdb.connect(self.mysql_host,
+                                       self.mysql_usr,
+                                       self.mysql_psswd,
+                                       self.mysql_db)
+            self.cur = self.cnx.cursor()
+        except MySQLdb.Error as e:
+            raise Exception('Data format error: MySQL error: ', e.args[1])
+
+    def store_data(self):
+        try:
+            self.cur.execute(
+                "INSERT INTO %s"
+                "(spo2, bpm, pi, alarm, exc, exc1)"
+                "VALUES(%d, %d, %f, %d, %d, %d)" %
+                (self.mysql_table, int(
+                    self.spo2), int(
+                    self.bpm), float(
+                    self.pi), int(
+                    self.alarm, 16), int(
+                        self.exc, 16), int(
+                            self.exc1, 16)))
+            self.cnx.commit()
+            # print "Data posted: " + self.cur._last_executed
+            # self._print_data()
+        except MySQLdb.Error as e:
+            print("ERROR %d IN CONNECTION: %s" % (e.args[0], e.args[1]))
+            print("Last query was: " + self.cur._last_executed)
+            self._print_data()
 
 class masimo:
 
@@ -79,16 +135,13 @@ class masimo:
 
     p_inc = 0
 
-    mysql_table = None
-
     store = None
 
     # Setup the dict
     def __init__(self, t="rad8s1", term=None,
-                 host="192.168.0.1",
-                 user="logmasimo", passwd="log@masimo-iXie3ahl",
-                 db="logmasimo", table="data"):
+                 store = None):
         self.masimo_type = t
+        self.store = store
 
         self.ser = serial.Serial()
         self.ser.port = term
@@ -102,7 +155,6 @@ class masimo:
         self.ser.dsrdtr = False  # disable hardware (DSR/DTR) flow control
         self.ser.writeTimeout = 2  # timeout for write
 
-        self.mysql_table = table
 
         self.parse = {
             'rad8s1': self._parse_rad8_serial_1,
@@ -110,24 +162,18 @@ class masimo:
             'radbs1': self._parse_rad_7_blue_serial_1
         }
 
-        self.store = datastore()
-
         try:
             self.ser.open()
         except Exception as e:
             print("error open serial port: " + str(e))
             sys.exit(1)
 
-        # setting up database Connection
         try:
-            self.cnx = MySQLdb.connect(host=host,
-                                       user=user,
-                                       passwd=passwd,
-                                       db=db)
-        except MySQLdb.Error as e:
-            print("ERROR %d IN CONNECTION: %s" % (e.args[0], e.args[1]))
+            self.store.initalize()
+            self.store.connect()
+        except Exception as e:
+            print("Eror init/open DB: " + str(e))
             sys.exit(2)
-        self.cur = self.cnx.cursor()
 
         self.ser.flushInput()
         self.ser.flushOutput()
@@ -222,31 +268,10 @@ class masimo:
         print "Masimo Set: " + str(self.store.exc_masimo_set)
 
     def store_data(self):
-        # print self.serial_string
-
         # If we have no data to record, then why record?
         if "-" in self.store.spo2 or "-" in self.store.bpm:
             return
-        try:
-            self.cur.execute(
-                "INSERT INTO %s"
-                "(spo2, bpm, pi, alarm, exc, exc1)"
-                "VALUES(%d, %d, %f, %d, %d, %d)" %
-                (self.mysql_table, int(
-                    self.store.spo2), int(
-                    self.store.bpm), float(
-                    self.store.pi), int(
-                    self.store.alarm, 16), int(
-                        self.store.exc, 16), int(
-                            self.store.exc1, 16)))
-            self.cnx.commit()
-            # print "Data posted: " + self.cur._last_executed
-            # self._print_data()
-        except MySQLdb.Error as e:
-            print("ERROR %d IN CONNECTION: %s" % (e.args[0], e.args[1]))
-            print("Last query was: " + self.cur._last_executed)
-            self._print_data()
-
+        self.store.store_data()
         self.p_inc = self.p_inc + 1
         if self.p_inc is 10:
             print ("Data(SPO2= %s BPM= %s) Stored at: %s" %
@@ -352,11 +377,6 @@ class main:
     t = None
     term = None
     f = None
-    mysql_host = None
-    mysql_usr = None
-    mysql_psswd = None
-    mysql_db = None
-    mysql_table = None
 
     def usage(self):
         print "Usage:"
@@ -370,13 +390,9 @@ class main:
     def import_config(self):
         # See https://www.red-dove.com/config-doc/
         try:
-            self.mysql_host = self.f.mysql.host
-            self.mysql_usr = self.f.mysql.user
-            self.mysql_psswd = self.f.mysql.password
-            self.mysql_db = self.f.mysql.db
-            self.mysql_table = self.f.mysql.table_name
+            db_type = self.f.db_type
         except Exception as err:
-            raise Exception('Missing/Invalid params in mysql config file:',
+            raise Exception('Missing/Invalid params in config file for :',
                             str(err))
         # Optional Properties
         try:
@@ -387,6 +403,20 @@ class main:
             self.t = self.f.masimo_type
         except Exception as err:
             self.t = "rad8s1"
+
+        if db_type == "mysql" :
+            self.store = datastore_mysql()
+        else:
+            # Default: assume mysql - but we should have
+            # exception already..
+            self.store = datastore_mysql()
+
+        # Data base specific parsing..
+        try:
+            self.store.parse_config(self.f)
+        except Exception as err:
+            raise Exception('Missing/Invalid params in config file for :',
+                            str(err))
 
     def __init__(self):
         try:
@@ -438,12 +468,7 @@ class main:
 
         self.m = masimo(t=self.t,
                         term=self.term,
-                        host=self.mysql_host,
-                        user=self.mysql_usr,
-                        passwd=self.mysql_psswd,
-                        db=self.mysql_db,
-                        table=self.mysql_table)
-
+                        store=self.store)
     def main(self):
         print "Capturing data..:"
         while True:
