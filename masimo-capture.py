@@ -38,7 +38,7 @@ import datetime
 # sudo pip install config
 from config import Config
 
-class datastore(object):
+class datastore_dump(object):
     spo2 = None
     bpm = None
     pi = None
@@ -63,6 +63,26 @@ class datastore(object):
     exc_low_signal_iq = False
     exc_masimo_set = False
 
+    def _print_data(self):
+        # Enable the following for printing purposes..
+        print "DATA @ " + str(datetime.datetime.now())
+        print "\tSPO2: %s\tBPM: %s\tPI: %s" % (self.spo2,
+              self.bpm, self.pi)
+        print "\tALARM: %s\t EXC: %s\t EXC1: %s" % (self.alarm,
+               self.exc, self.exc1)
+        print "\tException Decode: %s%s%s%s%s%s%s%s%s%s" %(
+        "No Sensor " if self.exc_sensor_no else "",
+        "Sensor Defective " if self.exc_sensor_defective else "",
+        "Low Perfusion " if self.exc_low_perfusion else "",
+        "Pulse Search " if self.exc_pulse_search else "",
+        "Interference " if self.exc_interference else "",
+        "Sensor OFF " if self.exc_sensor_off else "",
+        "Ambient Light " if self.exc_ambient_light else "",
+        "Sensor Unrecognized " if self.exc_sensor_unrecognized else "",
+        "Low Signal IQ " if self.exc_low_signal_iq else "",
+        "Masimo Set " if self.exc_masimo_set else ""
+        )
+
     def parse_config(self, f):
         return
 
@@ -73,9 +93,10 @@ class datastore(object):
         return
 
     def store_data(self):
+        self._print_data()
         return
 
-class datastore_mysql(datastore):
+class datastore_mysql(datastore_dump):
     mysql_host = None
     mysql_usr = None
     mysql_psswd = None
@@ -118,11 +139,9 @@ class datastore_mysql(datastore):
                             self.exc1, 16)))
             self.cnx.commit()
             # print "Data posted: " + self.cur._last_executed
-            # self._print_data()
         except MySQLdb.Error as e:
             print("ERROR %d IN CONNECTION: %s" % (e.args[0], e.args[1]))
             print("Last query was: " + self.cur._last_executed)
-            self._print_data()
 
 class masimo:
 
@@ -154,7 +173,6 @@ class masimo:
         self.ser.rtscts = False  # disable hardware (RTS/CTS) flow control
         self.ser.dsrdtr = False  # disable hardware (DSR/DTR) flow control
         self.ser.writeTimeout = 2  # timeout for write
-
 
         self.parse = {
             'rad8s1': self._parse_rad8_serial_1,
@@ -236,6 +254,8 @@ class masimo:
     def parse_data(self):
         try:
             self.parse[self.masimo_type]()
+            self._parse_alarm()
+            self._parse_exception()
         except Exception as err:
             raise Exception(
                 'Unsupported type?',
@@ -244,28 +264,6 @@ class masimo:
             self.is_data_valid()
         except Exception as err:
             print "Data invalid" + str(err)
-
-    def _print_data(self):
-        # Enable the following for printing purposes..
-        self._parse_alarm()
-        self._parse_exception()
-        print "SPO2: " + self.store.spo2
-        print "BPM: " + self.store.bpm
-        print "PI: " + self.store.pi
-        print "ALARM: " + self.store.alarm
-        print "EXCEPTION: " + self.store.exc
-        print "EXCEPTION1: " + self.store.exc1
-        print "Exception Decode: "
-        print "No Sensor: " + str(self.store.exc_sensor_no)
-        print "Sensor Defective: " + str(self.store.exc_sensor_defective)
-        print "Low Perfusion: " + str(self.store.exc_low_perfusion)
-        print "Pulse Search: " + str(self.store.exc_pulse_search)
-        print "Interference: " + str(self.store.exc_interference)
-        print "Sensor OFF: " + str(self.store.exc_sensor_off)
-        print "Ambient Light: " + str(self.store.exc_ambient_light)
-        print "Sensor Unrecognized: " + str(self.store.exc_sensor_unrecognized)
-        print "Low Signal IQ: " + str(self.store.exc_low_signal_iq)
-        print "Masimo Set: " + str(self.store.exc_masimo_set)
 
     def store_data(self):
         # If we have no data to record, then why record?
@@ -392,8 +390,8 @@ class main:
         try:
             db_type = self.f.db_type
         except Exception as err:
-            raise Exception('Missing/Invalid params in config file for :',
-                            str(err))
+            raise Exception('Missing/Invalid params in config file for :' +
+                            str(err), "db_type should be one of 'mysql' 'dump'")
         # Optional Properties
         try:
             self.term = self.f.serial_port
@@ -406,10 +404,13 @@ class main:
 
         if db_type == "mysql" :
             self.store = datastore_mysql()
+        elif db_type == "dump" :
+            self.store = datastore_dump()
         else:
-            # Default: assume mysql - but we should have
+            print "Invalid type " + db_type + " assuming terminal print"
+            # Default: assume terminal dump - but we should have
             # exception already..
-            self.store = datastore_mysql()
+            self.store = datastore_dump()
 
         # Data base specific parsing..
         try:
