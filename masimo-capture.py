@@ -143,6 +143,75 @@ class datastore_mysql(datastore_dump):
             print("ERROR %d IN CONNECTION: %s" % (e.args[0], e.args[1]))
             print("Last query was: " + self.cur._last_executed)
 
+class datastore_elastic(datastore_dump):
+    elastic_host = None
+    elastic_port = None
+    elastic_usr = None
+    elastic_idx = None
+    elastic_table = None
+
+    es = None
+    cur = None
+
+    def parse_config(self, f):
+        self.elastic_host = f.elasticsearch.host
+        self.elastic_port = f.elasticsearch.port
+        self.elastic_idx = f.elasticsearch.index
+        self.elastic_table = f.elasticsearch.table_name
+
+    def initalize(self):
+        # sudo pip install elasticsearch
+        global Elasticsearch
+        global gmtime
+        global strftime
+        try:
+            from elasticsearch import Elasticsearch as Elasticsearch
+            from time import gmtime, strftime
+        except Exception as err:
+            raise Exception('elastic search Failed: "pip install elasticsearch"?', str(err))
+
+        return
+
+    def connect(self):
+        try:
+            self.es =  Elasticsearch([{'host': self.elastic_host,
+                                       'port': self.elastic_port}])
+        except Exception as err:
+            raise Exception('Elasticsearch connect failed :', str(err))
+
+    def store_data(self):
+
+        e_id=strftime("%Y%m%d%H%M%S", gmtime())
+        e_time=strftime("%m-%d-%Y %H:%M:%S %Z", gmtime())
+        try:
+            self.es.index(index = self.elastic_idx,
+                 doc_type = self.elastic_table,
+                 id = e_id,
+                 body = {
+                    "time": e_time,
+                    "spo2": self.spo2,
+                    "bpm": self.bpm,
+                    "pi": self.pi,
+                    "alarm": self.alarm,
+                    "exc": self.exc,
+                    "exc1": self.exc1,
+
+                    "exc_sensor_no": self.exc_sensor_no,
+                    "exc_sensor_defective": self.exc_sensor_defective,
+                    "exc_low_perfusion": self.exc_low_perfusion,
+                    "exc_pulse_search": self.exc_pulse_search,
+                    "exc_interference": self.exc_interference,
+                    "exc_sensor_off": self.exc_sensor_off,
+                    "exc_ambient_light": self.exc_ambient_light,
+                    "exc_sensor_unrecognized": self.exc_sensor_unrecognized,
+                    "exc_low_signal_iq": self.exc_low_signal_iq,
+                    "exc_masimo_set": self.exc_masimo_set
+                 })
+        except Exception as err:
+            print 'Elasticsearch data push failed :' + str(err)
+
+
+
 class masimo:
 
     ser = None
@@ -391,7 +460,8 @@ class main:
             db_type = self.f.db_type
         except Exception as err:
             raise Exception('Missing/Invalid params in config file for :' +
-                            str(err), "db_type should be one of 'mysql' 'dump'")
+                            str(err),
+                            "db_type should be one of 'mysql' 'dump' 'elasticsearch'")
         # Optional Properties
         try:
             self.term = self.f.serial_port
@@ -404,6 +474,8 @@ class main:
 
         if db_type == "mysql" :
             self.store = datastore_mysql()
+        elif db_type == "elasticsearch" :
+            self.store = datastore_elastic()
         elif db_type == "dump" :
             self.store = datastore_dump()
         else:
