@@ -39,7 +39,7 @@ curl -XPUT "http://$HOSTNAME_AND_PORT/$INDEXNAME" -d '
 				"exc": {
 					"type": "long"
 				},
-				"exc": {
+				"exc1": {
 					"type": "long"
 				},
 
