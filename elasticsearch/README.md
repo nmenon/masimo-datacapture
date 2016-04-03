@@ -2,6 +2,7 @@ Elastic Search installation
 ==========================
 
 This is for the configuartion as follows
+```json
 	{
 	  "name" : "somemachine",
 	  "cluster_name" : "masmio-data-collector",
@@ -14,13 +15,15 @@ This is for the configuartion as follows
 	  },
 	  "tagline" : "You Know, for Search"
 	}
+```
 
 References:
-# https://www.elastic.co/guide/en/elasticsearch/reference/current/setup-repositories.html
-# https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-elasticsearch-on-ubuntu-14-04
+===========
+* https://www.elastic.co/guide/en/elasticsearch/reference/current/setup-repositories.html
+* https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-elasticsearch-on-ubuntu-14-04
 
 
-Installation steps:
+Elasticplastic Installation steps:
 ===================
 1. Install Java	(Grumble... OK, I dont personally am too thrilled about having JAVA running on my machine)
 	sudo apt-get install openjdk-7-jre
@@ -48,3 +51,15 @@ Security:
 
 I know, I have a local lan, but still, I dont like my kid's data to be compromized. for now
 I have constrained which specific machines can access over firewall rules.. but I'd probably want some sort of authentication mechanism to do things here.
+
+
+Creating basic index
+====================
+
+Elastic Search works with "documents" and indices.. which makes it pretty capable..
+
+Create DB:
+* ```./create_db index_name host:port```. Example:
+	./create_db logmasimo 192.168.0.6:9610
+* ```./delete_db index_name host:port```. Example:
+	./delete_db logmasimo 192.168.0.6:9610
