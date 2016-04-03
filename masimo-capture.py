@@ -38,20 +38,19 @@ import datetime
 # sudo pip install config
 from config import Config
 
-
-class masimo:
-
-    ser = None
-    cnx = None
-    serial_string = None
-    masimo_type = None
-
+class datastore:
     spo2 = None
     bpm = None
     pi = None
     alarm = "000000"
     exc = "000000"
     exc1 = "000000"
+    v_spo2 = None
+    v_bpm = None
+    v_pi = None
+    v_alarm = None
+    v_exc = None
+    v_exc1 = None
 
     exc_sensor_no = False
     exc_sensor_defective = False
@@ -64,11 +63,25 @@ class masimo:
     exc_low_signal_iq = False
     exc_masimo_set = False
 
+    def initalize(self):
+        return
+    def store_data(self):
+        return
+
+class masimo:
+
+    ser = None
+    cnx = None
+    serial_string = None
+    masimo_type = None
+
     parse = None
 
     p_inc = 0
 
     mysql_table = None
+
+    store = None
 
     # Setup the dict
     def __init__(self, t="rad8s1", term=None,
@@ -96,6 +109,8 @@ class masimo:
             'rad7cs1': self._parse_rad7_color_serial_1,
             'radbs1': self._parse_rad_7_blue_serial_1
         }
+
+        self.store = datastore()
 
         try:
             self.ser.open()
@@ -130,43 +145,43 @@ class masimo:
 
     def is_format_valid(self):
         # First verify that the strings are all proper in the right places..
-        if self.v_spo2 != 'SPO2':
-            raise Exception('Data format error: SPO2 is: ', self.v_spo2)
+        if self.store.v_spo2 != 'SPO2':
+            raise Exception('Data format error: SPO2 is: ', self.store.v_spo2)
 
-        if self.v_bpm != 'BPM':
-            raise Exception('Data format error: BPM is: ', self.v_bpm)
+        if self.store.v_bpm != 'BPM':
+            raise Exception('Data format error: BPM is: ', self.store.v_bpm)
 
-        if self.v_pi != "PI":
-            raise Exception('Data format error: PI is: ', self.v_pi)
+        if self.store.v_pi != "PI":
+            raise Exception('Data format error: PI is: ', self.store.v_pi)
 
-        if self.v_alarm != "ALARM":
-            raise Exception('Data format error: ALARM is: ', self.v_alarm)
+        if self.store.v_alarm != "ALARM":
+            raise Exception('Data format error: ALARM is: ', self.store.v_alarm)
 
-        if self.v_exc != "EXC":
-            raise Exception('Data format error: EXC is: ', self.v_exc)
+        if self.store.v_exc != "EXC":
+            raise Exception('Data format error: EXC is: ', self.store.v_exc)
 
-        if self.v_exc1 != "EXC1":
-            raise Exception('Data format error: EXC1 is: ', self.v_exc1)
+        if self.store.v_exc1 != "EXC1":
+            raise Exception('Data format error: EXC1 is: ', self.store.v_exc1)
 
     def is_info_valid(self):
         # Verify if the data is valid as well
         # - SPO2, BPM, ALARM, EXC, EXC1 should be int
         # - PI should be a float
         try:
-            tmp = int(self.spo2)
-            tmp = int(self.bpm)
-            tmp1 = float(self.pi)
-            tmp = int(self.alarm, 16)
-            tmp = int(self.exc, 16)
-            tmp = int(self.exc1, 16),
+            tmp = int(self.store.spo2)
+            tmp = int(self.store.bpm)
+            tmp1 = float(self.store.pi)
+            tmp = int(self.store.alarm, 16)
+            tmp = int(self.store.exc, 16)
+            tmp = int(self.store.exc1, 16),
         except Exception as err:
             raise Exception('Data contents invalid',
-                            "SPO2=" + self.spo2 +
-                            "BPM=" + self.bpm +
-                            "PI=" + self.pi +
-                            "ALARM=" + self.alarm +
-                            "EXC=" + self.exc +
-                            "EXC1=" + self.exc1)
+                            "SPO2=" + self.store.spo2 +
+                            "BPM=" + self.store.bpm +
+                            "PI=" + self.store.pi +
+                            "ALARM=" + self.store.alarm +
+                            "EXC=" + self.store.exc +
+                            "EXC1=" + self.store.exc1)
 
     def is_data_valid(self):
         self.is_format_valid()
@@ -188,29 +203,29 @@ class masimo:
         # Enable the following for printing purposes..
         self._parse_alarm()
         self._parse_exception()
-        print "SPO2: " + self.spo2
-        print "BPM: " + self.bpm
-        print "PI: " + self.pi
-        print "ALARM: " + self.alarm
-        print "EXCEPTION: " + self.exc
-        print "EXCEPTION1: " + self.exc1
+        print "SPO2: " + self.store.spo2
+        print "BPM: " + self.store.bpm
+        print "PI: " + self.store.pi
+        print "ALARM: " + self.store.alarm
+        print "EXCEPTION: " + self.store.exc
+        print "EXCEPTION1: " + self.store.exc1
         print "Exception Decode: "
-        print "No Sensor: " + str(self.exc_sensor_no)
-        print "Sensor Defective: " + str(self.exc_sensor_defective)
-        print "Low Perfusion: " + str(self.exc_low_perfusion)
-        print "Pulse Search: " + str(self.exc_pulse_search)
-        print "Interference: " + str(self.exc_interference)
-        print "Sensor OFF: " + str(self.exc_sensor_off)
-        print "Ambient Light: " + str(self.exc_ambient_light)
-        print "Sensor Unrecognized: " + str(self.exc_sensor_unrecognized)
-        print "Low Signal IQ: " + str(self.exc_low_signal_iq)
-        print "Masimo Set: " + str(self.exc_masimo_set)
+        print "No Sensor: " + str(self.store.exc_sensor_no)
+        print "Sensor Defective: " + str(self.store.exc_sensor_defective)
+        print "Low Perfusion: " + str(self.store.exc_low_perfusion)
+        print "Pulse Search: " + str(self.store.exc_pulse_search)
+        print "Interference: " + str(self.store.exc_interference)
+        print "Sensor OFF: " + str(self.store.exc_sensor_off)
+        print "Ambient Light: " + str(self.store.exc_ambient_light)
+        print "Sensor Unrecognized: " + str(self.store.exc_sensor_unrecognized)
+        print "Low Signal IQ: " + str(self.store.exc_low_signal_iq)
+        print "Masimo Set: " + str(self.store.exc_masimo_set)
 
     def store_data(self):
         # print self.serial_string
 
         # If we have no data to record, then why record?
-        if "-" in self.spo2 or "-" in self.bpm:
+        if "-" in self.store.spo2 or "-" in self.store.bpm:
             return
         try:
             self.cur.execute(
@@ -218,12 +233,12 @@ class masimo:
                 "(spo2, bpm, pi, alarm, exc, exc1)"
                 "VALUES(%d, %d, %f, %d, %d, %d)" %
                 (self.mysql_table, int(
-                    self.spo2), int(
-                    self.bpm), float(
-                    self.pi), int(
-                    self.alarm, 16), int(
-                        self.exc, 16), int(
-                            self.exc1, 16)))
+                    self.store.spo2), int(
+                    self.store.bpm), float(
+                    self.store.pi), int(
+                    self.store.alarm, 16), int(
+                        self.store.exc, 16), int(
+                            self.store.exc1, 16)))
             self.cnx.commit()
             # print "Data posted: " + self.cur._last_executed
             # self._print_data()
@@ -235,11 +250,11 @@ class masimo:
         self.p_inc = self.p_inc + 1
         if self.p_inc is 10:
             print ("Data(SPO2= %s BPM= %s) Stored at: %s" %
-                   (self.spo2, self.bpm, datetime.datetime.now()))
+                   (self.store.spo2, self.store.bpm, datetime.datetime.now()))
             self.p_inc = 0
 
     def _parse_alarm(self):
-        val = int(self.alarm, 16)
+        val = int(self.store.alarm, 16)
         # SPO2: 097
         # BPM: 064
         # PI: 00.80
@@ -266,17 +281,17 @@ class masimo:
         # 800 = Masimo SET. This flag means the algorithm is running in full
         # SET mode. It requires a SET sensor and needs to acquire some
         # clean data for this flag to be set
-        val = int(self.exc, 16)
-        self.exc_sensor_no = True if val & 1 else False
-        self.exc_sensor_defective = True if val & 2 else False
-        self.exc_low_perfusion = True if val & 4 else False
-        self.exc_pulse_search = True if val & 8 else False
-        self.exc_interference = True if val & (1 << 4) else False
-        self.exc_sensor_off = True if val & (2 << 4) else False
-        self.exc_ambient_light = True if val & (4 << 4) else False
-        self.exc_sensor_unrecognized = True if val & (8 << 4) else False
-        self.exc_low_signal_iq = True if val & (4 << 8) else False
-        self.exc_masimo_set = True if val & (8 << 8) else False
+        val = int(self.store.exc, 16)
+        self.store.exc_sensor_no = True if val & 1 else False
+        self.store.exc_sensor_defective = True if val & 2 else False
+        self.store.exc_low_perfusion = True if val & 4 else False
+        self.store.exc_pulse_search = True if val & 8 else False
+        self.store.exc_interference = True if val & (1 << 4) else False
+        self.store.exc_sensor_off = True if val & (2 << 4) else False
+        self.store.exc_ambient_light = True if val & (4 << 4) else False
+        self.store.exc_sensor_unrecognized = True if val & (8 << 4) else False
+        self.store.exc_low_signal_iq = True if val & (4 << 8) else False
+        self.store.exc_masimo_set = True if val & (8 << 8) else False
 
     def _parse_rad8_serial_1(self):
         # 03/19/16 13:37:12 SN=0000093112 SPO2=---% BPM=---% DESAT=--
@@ -285,19 +300,19 @@ class masimo:
         S = S.replace('%', ' ')
         ord = S.split(' ')
 
-        self.v_spo2 = MySQLdb.escape_string(ord[4])
-        self.v_bpm = MySQLdb.escape_string(ord[7])
-        self.v_pi = MySQLdb.escape_string(ord[9])
-        self.v_alarm = MySQLdb.escape_string(ord[22])
-        self.v_exc = MySQLdb.escape_string(ord[24])
-        self.v_exc1 = "EXC1"
+        self.store.v_spo2 = MySQLdb.escape_string(ord[4])
+        self.store.v_bpm = MySQLdb.escape_string(ord[7])
+        self.store.v_pi = MySQLdb.escape_string(ord[9])
+        self.store.v_alarm = MySQLdb.escape_string(ord[22])
+        self.store.v_exc = MySQLdb.escape_string(ord[24])
+        self.store.v_exc1 = "EXC1"
 
-        self.spo2 = MySQLdb.escape_string(ord[5])
-        self.bpm = MySQLdb.escape_string(ord[8])
-        self.pi = MySQLdb.escape_string(ord[10])
-        self.alarm = MySQLdb.escape_string(ord[23])
-        self.exc = MySQLdb.escape_string(ord[25])
-        self.exc1 = MySQLdb.escape_string("00000000")
+        self.store.store.spo2 = MySQLdb.escape_string(ord[5])
+        self.store.store.bpm = MySQLdb.escape_string(ord[8])
+        self.store.store.pi = MySQLdb.escape_string(ord[10])
+        self.store.store.alarm = MySQLdb.escape_string(ord[23])
+        self.store.store.exc = MySQLdb.escape_string(ord[25])
+        self.store.store.exc1 = MySQLdb.escape_string("00000000")
 
     def _parse_rad7_color_serial_1(self):
         # 03/17/16 19:19:36 SN=---------- SPO2=098% BPM=123 PI=00.55 SPCO=--%
@@ -307,21 +322,21 @@ class masimo:
         S = S.replace('%', ' ')
         ord = S.split(' ')
 
-        self.v_spo2 = MySQLdb.escape_string(ord[4])
-        self.v_bpm = MySQLdb.escape_string(ord[7])
-        self.v_pi = MySQLdb.escape_string(ord[9])
-        self.v_alarm = MySQLdb.escape_string(ord[29])
-        self.v_exc = MySQLdb.escape_string(ord[31])
-        self.v_exc1 = MySQLdb.escape_string(ord[33])
+        self.store.v_spo2 = MySQLdb.escape_string(ord[4])
+        self.store.v_bpm = MySQLdb.escape_string(ord[7])
+        self.store.v_pi = MySQLdb.escape_string(ord[9])
+        self.store.v_alarm = MySQLdb.escape_string(ord[29])
+        self.store.v_exc = MySQLdb.escape_string(ord[31])
+        self.store.v_exc1 = MySQLdb.escape_string(ord[33])
 
-        self.spo2 = MySQLdb.escape_string(ord[5])
-        self.bpm = MySQLdb.escape_string(ord[8])
-        self.pi = MySQLdb.escape_string(ord[10])
+        self.store.spo2 = MySQLdb.escape_string(ord[5])
+        self.store.bpm = MySQLdb.escape_string(ord[8])
+        self.store.pi = MySQLdb.escape_string(ord[10])
         # have to find this experimentally
-        self.alarm = MySQLdb.escape_string(ord[30])
-        self.exc = MySQLdb.escape_string(ord[32])
+        self.store.alarm = MySQLdb.escape_string(ord[30])
+        self.store.exc = MySQLdb.escape_string(ord[32])
         # I dont seem to have data to decode this
-        self.exc1 = MySQLdb.escape_string(ord[34])
+        self.store.exc1 = MySQLdb.escape_string(ord[34])
 
     def _parse_rad_7_blue_serial_1(self):
         # http://www.infiniti.se/upload/Servicemanual/Masimo/SM_EN_RADICA7_Radical-7%20Service%20manual%20rev.A.pdf
