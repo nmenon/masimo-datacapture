@@ -347,7 +347,7 @@
     {
       "collapse": false,
       "editable": true,
-      "height": "250px",
+      "height": "150px",
       "panels": [
         {
           "aliasColors": {},
@@ -390,7 +390,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 12,
+          "span": 11,
           "stack": false,
           "steppedLine": false,
           "targets": [
@@ -490,6 +490,169 @@
             "percentunit",
             "percentunit"
           ]
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(50, 172, 45, 0.97)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(245, 54, 54, 0.9)"
+          ],
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "format": "none",
+          "id": 9,
+          "interval": null,
+          "isNew": true,
+          "links": [],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "span": 1,
+          "sparkline": {
+            "fillColor": "rgba(248, 200, 19, 0.18)",
+            "full": false,
+            "lineColor": "rgb(255, 88, 4)",
+            "show": true
+          },
+          "targets": [
+            {
+              "bucketAggs": [
+                {
+                  "field": "time",
+                  "id": "2",
+                  "settings": {
+                    "interval": "auto",
+                    "min_doc_count": 0
+                  },
+                  "type": "date_histogram"
+                }
+              ],
+              "dsType": "elasticsearch",
+              "metrics": [
+                {
+                  "field": "alarm",
+                  "id": "1",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                }
+              ],
+              "refId": "A",
+              "timeField": "time"
+            }
+          ],
+          "thresholds": "0,1",
+          "title": "Alarm",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        }
+      ],
+      "title": "New row"
+    },
+    {
+      "collapse": false,
+      "editable": true,
+      "height": "200px",
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 1,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 8,
+          "isNew": true,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 2,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 11,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "bucketAggs": [
+                {
+                  "field": "time",
+                  "id": "2",
+                  "settings": {
+                    "interval": "auto",
+                    "min_doc_count": 0
+                  },
+                  "type": "date_histogram"
+                }
+              ],
+              "dsType": "elasticsearch",
+              "metrics": [
+                {
+                  "field": "alarm",
+                  "id": "1",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                }
+              ],
+              "refId": "A",
+              "timeField": "time"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "alarm data",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ]
         }
       ],
       "title": "New row"
@@ -533,6 +696,6 @@
   },
   "refresh": false,
   "schemaVersion": 8,
-  "version": 18,
+  "version": 27,
   "links": []
 }
