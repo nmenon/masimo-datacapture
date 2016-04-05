@@ -162,7 +162,6 @@ class datastore_elastic(datastore_dump):
     def initalize(self):
         # sudo pip install elasticsearch
         global Elasticsearch
-        global gmtime
         global strftime
         try:
             from elasticsearch import Elasticsearch as Elasticsearch
@@ -181,31 +180,31 @@ class datastore_elastic(datastore_dump):
 
     def store_data(self):
 
-        e_id=strftime("%Y%m%d%H%M%S", gmtime())
-        e_time=strftime("%m-%d-%Y %H:%M:%S %Z", gmtime())
+	l_time = time.localtime()
+        e_id=strftime("%Y%m%d%H%M%S", l_time)
+        e_time=strftime("%m-%d-%Y %H:%M:%S %Z", l_time)
         try:
             self.es.index(index = self.elastic_idx,
                  doc_type = self.elastic_table,
                  id = e_id,
                  body = {
-                    "time": e_time,
-                    "spo2": self.spo2,
-                    "bpm": self.bpm,
-                    "pi": self.pi,
-                    "alarm": self.alarm,
-                    "exc": self.exc,
-                    "exc1": self.exc1,
-
-                    "exc_sensor_no": self.exc_sensor_no,
-                    "exc_sensor_defective": self.exc_sensor_defective,
-                    "exc_low_perfusion": self.exc_low_perfusion,
-                    "exc_pulse_search": self.exc_pulse_search,
-                    "exc_interference": self.exc_interference,
-                    "exc_sensor_off": self.exc_sensor_off,
-                    "exc_ambient_light": self.exc_ambient_light,
-                    "exc_sensor_unrecognized": self.exc_sensor_unrecognized,
-                    "exc_low_signal_iq": self.exc_low_signal_iq,
-                    "exc_masimo_set": self.exc_masimo_set
+                    "time": str(e_time),
+                    "SPO2": int(self.spo2),
+                    "BPM": int(self.bpm),
+                    "PI": float(self.pi),
+                    "alarm": int(self.alarm, 16),
+                    "EXC": int(self.exc, 16),
+                    "EXC1": int(self.exc1, 16),
+                    "exc_sensor_no": int(self.exc_sensor_no),
+                    "exc_sensor_defective": int(self.exc_sensor_defective),
+                    "exc_low_perfusion": int(self.exc_low_perfusion),
+                    "exc_pulse_search": int(self.exc_pulse_search),
+                    "exc_interference": int(self.exc_interference),
+                    "exc_sensor_off": int(self.exc_sensor_off),
+                    "exc_ambient_light": int(self.exc_ambient_light),
+                    "exc_sensor_unrecognized": int(self.exc_sensor_unrecognized),
+                    "exc_low_signal_iq": int(self.exc_low_signal_iq),
+                    "exc_masimo_set": int(self.exc_masimo_set)
                  })
         except Exception as err:
             print 'Elasticsearch data push failed :' + str(err)
