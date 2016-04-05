@@ -16,66 +16,65 @@ fi
 
 curl -XPUT "http://$HOSTNAME_AND_PORT/$INDEXNAME" -d '
 {
-	"mappings": {
-		"data": {
-			"date_detection": false,
-			"properties": {
-				"time": {
-					"type": "date",
-					"format": "MM-dd-yyyy HH:mm:ss z"
-				},
-				"spo2": {
-					"type": "byte"
-				},
-				"bpm": {
-					"type": "short"
-				},
-				"pi": {
-					"type": "float"
-				},
-				"alarm": {
-					"type": "long"
-				},
-				"exc": {
-					"type": "long"
-				},
-				"exc1": {
-					"type": "long"
-				},
-
-				"exc_sensor_no": {
-					"type": "boolean"
-				},
-				"exc_sensor_defective": {
-					"type": "boolean"
-				},
-				"exc_low_perfusion": {
-					"type": "boolean"
-				},
-				"exc_pulse_search": {
-					"type": "boolean"
-				},
-				"exc_interference": {
-					"type": "boolean"
-				},
-				"exc_sensor_off": {
-					"type": "boolean"
-				},
-				"exc_ambient_light": {
-					"type": "boolean"
-				},
-				"exc_sensor_unrecognized": {
-					"type": "boolean"
-				},
-				"exc_low_signal_iq": {
-					"type": "boolean"
-				},
-				"exc_masimo_set": {
-					"type": "boolean"
-				}
-			}
-		}
-	}
+    "mappings" : {
+      "data" : {
+        "date_detection" : false,
+        "properties" : {
+          "alarm" : {
+            "type" : "long"
+          },
+          "bpm" : {
+            "type" : "short"
+          },
+          "exc" : {
+            "type" : "long"
+          },
+          "exc1" : {
+            "type" : "long"
+          },
+          "exc_ambient_light" : {
+            "type" : "boolean"
+          },
+          "exc_interference" : {
+            "type" : "boolean"
+          },
+          "exc_low_perfusion" : {
+            "type" : "boolean"
+          },
+          "exc_low_signal_iq" : {
+            "type" : "boolean"
+          },
+          "exc_masimo_set" : {
+            "type" : "boolean"
+          },
+          "exc_pulse_search" : {
+            "type" : "boolean"
+          },
+          "exc_sensor_defective" : {
+            "type" : "boolean"
+          },
+          "exc_sensor_no" : {
+            "type" : "boolean"
+          },
+          "exc_sensor_off" : {
+            "type" : "boolean"
+          },
+          "exc_sensor_unrecognized" : {
+            "type" : "boolean"
+          },
+          "pi" : {
+            "type" : "float"
+          },
+          "spo2" : {
+            "type" : "byte"
+          },
+          "time" : {
+            "type" : "date",
+            "format" : "MM-dd-yyyy HH:mm:ss z"
+          }
+        }
+      }
+    }
 }'
 
 echo
