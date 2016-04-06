@@ -64,6 +64,14 @@ class datastore_dump(object):
     exc_masimo_set = False
     exc_unknown = 0
 
+    alm_mute_pressed = False
+    alm_triggered = False
+    alm_bpm_low = False
+    alm_bpm_high = False
+    alm_spo2_low = False
+    alm_spo2_high = False
+    alm_unknown = 0
+
     def _print_data(self):
         # Enable the following for printing purposes..
         print "DATA @ " + str(datetime.datetime.now())
@@ -71,26 +79,40 @@ class datastore_dump(object):
               self.bpm, self.pi)
         print "\tALARM: %s\t EXC: %s\t EXC1: %s" % (self.alarm,
                self.exc, self.exc1)
-        if (self.exc_unknown != 0):
-            exc_unknown_p = "\t Unknown Exception Code: 0x%08x \n" % (self.exc_unknown)
-        else:
-            exc_unknown_p = ""
+        if int(self.exc, 16) != 0:
+            if (self.exc_unknown != 0):
+                exc_unknown_p = "\t Unknown Exception Code: 0x%08x \n" % (self.exc_unknown)
+            else:
+                exc_unknown_p = ""
 
-        print "\tException Decode: %s%s%s%s%s%s%s%s%s%s%s" %(
-        "No Sensor " if self.exc_sensor_no else "",
-        "Sensor Defective " if self.exc_sensor_defective else "",
-        "Low Perfusion " if self.exc_low_perfusion else "",
-        "Pulse Search " if self.exc_pulse_search else "",
-        "Interference " if self.exc_interference else "",
-        "Sensor OFF " if self.exc_sensor_off else "",
-        "Ambient Light " if self.exc_ambient_light else "",
-        "Sensor Unrecognized " if self.exc_sensor_unrecognized else "",
-        "Low Signal IQ " if self.exc_low_signal_iq else "",
-        "Masimo Set " if self.exc_masimo_set else "",
-        exc_unknown_p
-        )
-        if (self.exc_unknown != 0):
-            print "\t Unknown Exception Code: 0x%08x\n" % (self.exc_unknown)
+            print "\tException Decode: %s%s%s%s%s%s%s%s%s%s%s" %(
+            "No Sensor " if self.exc_sensor_no else "",
+            "Sensor Defective " if self.exc_sensor_defective else "",
+            "Low Perfusion " if self.exc_low_perfusion else "",
+            "Pulse Search " if self.exc_pulse_search else "",
+            "Interference " if self.exc_interference else "",
+            "Sensor OFF " if self.exc_sensor_off else "",
+            "Ambient Light " if self.exc_ambient_light else "",
+            "Sensor Unrecognized " if self.exc_sensor_unrecognized else "",
+            "Low Signal IQ " if self.exc_low_signal_iq else "",
+            "Masimo Set " if self.exc_masimo_set else "",
+            exc_unknown_p
+            )
+
+        if int(self.alarm, 16) != 0:
+            if (self.alm_unknown != 0):
+                alm_unknown_p = "\t Unknown Alarm Code: 0x%08x \n" % (self.alm_unknown)
+            else:
+                alm_unknown_p = ""
+            print "\tAlarm Decode: %s%s%s%s%s%s%s" %(
+                    "MUTED " if self.alm_mute_pressed else "",
+                    "TRIGGER " if self.alm_triggered else "",
+                    "BPM Low " if self.alm_bpm_low else "",
+                    "BPM High " if self.alm_bpm_high else "",
+                    "SPO2 Low " if self.alm_spo2_low else "",
+                    "SPO2 High " if self.alm_spo2_high else "",
+                    alm_unknown_p
+                    )
 
     def parse_config(self, f):
         return
@@ -214,7 +236,14 @@ class datastore_elastic(datastore_dump):
                     "exc_sensor_unrecognized": int(self.exc_sensor_unrecognized),
                     "exc_low_signal_iq": int(self.exc_low_signal_iq),
                     "exc_masimo_set": int(self.exc_masimo_set),
-                    "exc_unknown": int(self.exc_unknown)
+                    "exc_unknown": int(self.exc_unknown),
+                    "alm_mute_pressed": int(self.alm_mute_pressed),
+                    "alm_triggered": int(self.alm_triggered),
+                    "alm_bpm_low": int(self.alm_bpm_low),
+                    "alm_bpm_high": int(self.alm_bpm_high),
+                    "alm_spo2_low": int(self.alm_spo2_low),
+                    "alm_spo2_high": int(self.alm_spo2_high),
+                    "alm_unknown": int(self.alm_unknown)
                  })
         except Exception as err:
             print 'Elasticsearch data push failed :' + str(err)
@@ -360,6 +389,70 @@ class masimo:
         # BPM: 064
         # PI: 00.80
         # ALARM: 000018
+
+        # DISCLAIMER:---- #3BEA9I support ticket number with Masimo
+        # MASIMO Claims that the decode of ALARM bit fields is MASIMO Properitory information.
+        # The following is the email from masimo:
+        # "
+        # Unfortunately that is prorietary information.
+        # You will need to sign a non disclosure agreement and work with our legal department
+        # to get that information.
+        # "
+        # Contact for Masimo USA: techservice-us@masimo.com
+        # BUT I refused to sign NDA since that has two problems:
+        # 1. I have to ask my current employer if I can indeed sign an NDA for something that
+        #    is strictly my personal business and has no overlap that I know of with my employer
+        #    and something that is being done on my own spare time
+        # 2. I want ths resultant code - that is this very code to be BSD and opensource
+        #    implying anyone can use it how ever they feel like.
+        #
+        # Hence, The following data
+        # is based on MY PERSONAL DECODE based on experimentation with a RAD8 (the backup pulseox
+        # at home). I will be unable to substantiate beyond the details of my experimentation
+        # that I am documenting below - Please feel free to add to this decode with
+        # additional data if you can decode any:
+
+        # Test #1 -> with proper sensor data collected, press and release mute button:
+        # we see 0x20 being set on ALARM and cleared -> (bit 5)
+        self.store.alm_mute_pressed = True if val & (0x1 << 5) else False
+
+        # Test #2
+        # Based on data that everytime Alarm is audible and flashing, it is accompanied with
+        # data 0x10 -> bit 4 set
+        self.store.alm_triggered = True if val & (0x1 << 4) else False
+
+        # Test #3
+        # What happens when BPM goes out of range - Test Low
+        # Test setup: connect to self, see BPM range, setup BPM off range a bit
+        # my heart rate is 68, setup min bpm for 70, max to 185
+        # I see 0x18 -> This should imply bit 3 is BPM lower than limit
+        self.store.alm_bpm_low = True if val & (0x1 << 3) else False
+
+        # Test #4
+        # What happens when BPM goes out of range - Test High
+        # Test setup: connect to self, see BPM range, setup BPM off range a bit
+        # my heart rate is 68, setup min bpm for 45, max to 60
+        # I see 0x14 -> This should imply bit 2 is BPM higher than limit
+        self.store.alm_bpm_high = True if val & (0x1 << 2) else False
+
+        # Test #5
+        # What happens when O2 goes out of range - Test Low
+        # Test setup: connect to self, see O2 range, setup O2 off range a bit
+        # my SPO2 is 99%, setup min bpm for 98, max to none, then lightly
+        # space sensor from finger to trigger low SPO2 alarm
+        # I see 0x12 -> This should imply bit 1 is O2 lower than limit
+        self.store.alm_spo2_low = True if val & (0x1 << 1) else False
+
+        # Test #6
+        # What happens when O2 goes out of range - Test High
+        # Test setup: connect to self, see O2 range, setup O2 off range a bit
+        # my SPO2 is 99%, setup min bpm for 85, max to 97
+        # I see 0x11 -> This should imply bit 0 is O2 higher than limit
+        self.store.alm_spo2_high = True if val & (0x1 << 0) else False
+
+        # Alarm unknown - Save it for future analysis
+        self.store.alm_unknown = val & ~((1 << 0) | (1 << 1) | (1 << 2) |
+                                         (1 << 3) | (1 << 4) | (1 << 5))
         return
 
     def _parse_exception(self):
