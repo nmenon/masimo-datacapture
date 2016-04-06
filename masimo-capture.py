@@ -62,6 +62,7 @@ class datastore_dump(object):
     exc_sensor_unrecognized = False
     exc_low_signal_iq = False
     exc_masimo_set = False
+    exc_unknown = 0
 
     def _print_data(self):
         # Enable the following for printing purposes..
@@ -70,7 +71,12 @@ class datastore_dump(object):
               self.bpm, self.pi)
         print "\tALARM: %s\t EXC: %s\t EXC1: %s" % (self.alarm,
                self.exc, self.exc1)
-        print "\tException Decode: %s%s%s%s%s%s%s%s%s%s" %(
+        if (self.exc_unknown != 0):
+            exc_unknown_p = "\t Unknown Exception Code: 0x%08x \n" % (self.exc_unknown)
+        else:
+            exc_unknown_p = ""
+
+        print "\tException Decode: %s%s%s%s%s%s%s%s%s%s%s" %(
         "No Sensor " if self.exc_sensor_no else "",
         "Sensor Defective " if self.exc_sensor_defective else "",
         "Low Perfusion " if self.exc_low_perfusion else "",
@@ -80,8 +86,11 @@ class datastore_dump(object):
         "Ambient Light " if self.exc_ambient_light else "",
         "Sensor Unrecognized " if self.exc_sensor_unrecognized else "",
         "Low Signal IQ " if self.exc_low_signal_iq else "",
-        "Masimo Set " if self.exc_masimo_set else ""
+        "Masimo Set " if self.exc_masimo_set else "",
+        exc_unknown_p
         )
+        if (self.exc_unknown != 0):
+            print "\t Unknown Exception Code: 0x%08x\n" % (self.exc_unknown)
 
     def parse_config(self, f):
         return
@@ -204,7 +213,8 @@ class datastore_elastic(datastore_dump):
                     "exc_ambient_light": int(self.exc_ambient_light),
                     "exc_sensor_unrecognized": int(self.exc_sensor_unrecognized),
                     "exc_low_signal_iq": int(self.exc_low_signal_iq),
-                    "exc_masimo_set": int(self.exc_masimo_set)
+                    "exc_masimo_set": int(self.exc_masimo_set),
+                    "exc_unknown": int(self.exc_unknown)
                  })
         except Exception as err:
             print 'Elasticsearch data push failed :' + str(err)
@@ -383,6 +393,11 @@ class masimo:
         self.store.exc_sensor_unrecognized = True if val & (8 << 4) else False
         self.store.exc_low_signal_iq = True if val & (4 << 8) else False
         self.store.exc_masimo_set = True if val & (8 << 8) else False
+        # clear all known bits to find the unknown flags..
+        self.store.exc_unknown = val & ~((1 << 0) | (1 << 1) | (1 << 2) |
+                                         (1 << 3) | (1 << 4) | (1 << 5) | (1 << 6) |
+                                         (1 << 7) | (1 << 8) | (1 << 9) | (1 << 10) |
+                                         (1 << 11))
 
     def _parse_rad8_serial_1(self):
         # 03/19/16 13:37:12 SN=0000093112 SPO2=---% BPM=---% DESAT=--
