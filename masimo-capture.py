@@ -398,12 +398,12 @@ class masimo:
         self.store.v_exc = MySQLdb.escape_string(ord[24])
         self.store.v_exc1 = "EXC1"
 
-        self.store.store.spo2 = MySQLdb.escape_string(ord[5])
-        self.store.store.bpm = MySQLdb.escape_string(ord[8])
-        self.store.store.pi = MySQLdb.escape_string(ord[10])
-        self.store.store.alarm = MySQLdb.escape_string(ord[23])
-        self.store.store.exc = MySQLdb.escape_string(ord[25])
-        self.store.store.exc1 = MySQLdb.escape_string("00000000")
+        self.store.spo2 = MySQLdb.escape_string(ord[5])
+        self.store.bpm = MySQLdb.escape_string(ord[8])
+        self.store.pi = MySQLdb.escape_string(ord[10])
+        self.store.alarm = MySQLdb.escape_string(ord[23])
+        self.store.exc = MySQLdb.escape_string(ord[25])
+        self.store.exc1 = MySQLdb.escape_string("00000000")
 
     def _parse_rad7_color_serial_1(self):
         # 03/17/16 19:19:36 SN=---------- SPO2=098% BPM=123 PI=00.55 SPCO=--%
