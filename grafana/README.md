@@ -101,6 +101,76 @@ index 230e812..6b81211 100644
  
 ```
 
+Apache2 Setup with SSL and HTTP
+===============================
+
+Typically we would NOT like to expose http clients to the bad internet
+outside world without some level of authentication.
+
+So, using apache proxy, we can create two sites: an http world
+for inside the home(secure private network) and https world with
+authentication for external world. NOTE:
+* sites-available/000-default.conf is your http webpage
+* sites-available/default-ssl.conf is your secure https webpage settings
+you need to link them in the /etc/apache2/sites-enabled directory for them to
+be active. a simple step as follows will do the job
+```bash
+cd /etc/apache2/sites-enabled
+ln -s ../sites-available/000-default.conf
+ln -s ../sites-available/default-ssl.conf
+```
+
+<b> See http://www.colostate.edu/~ric/htpass.html for information on how to create a password
+access control for Apache</b>
+
+```patch
+diff --git a/apache2/sites-available/000-default.conf b/apache2/sites-available/000-default.conf
+index cfe8df5..6462a56 100644
+--- a/apache2/sites-available/000-default.conf
++++ b/apache2/sites-available/000-default.conf
+@@ -26,6 +26,12 @@
+        # following line enables the CGI configuration for this host only
+        # after it has been globally disabled with "a2disconf".
+        #Include conf-available/serve-cgi-bin.conf
++
++       # Grafana Proxy setup
++       ProxyPreserveHost On
++       ProxyPass /limited/stats http://localhost:9600
++       ProxyPassReverse /limited/stats http://localhost:9600
++
+ </VirtualHost>
+ 
+ # vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+diff --git a/apache2/sites-available/default-ssl.conf b/apache2/sites-available/default-ssl.conf
+index 6b81211..7be0ec0 100644
+--- a/apache2/sites-available/default-ssl.conf
++++ b/apache2/sites-available/default-ssl.conf
+@@ -138,6 +138,15 @@ LoadModule proxy_http_module /usr/lib/apache2/modules/mod_proxy_http.so
+            ProxyPreserveHost On
+            ProxyPass /limited/stats http://localhost:9600
+            ProxyPassReverse /limited/stats http://localhost:9600
++           # Grafana Authentication setup
++           <Location "/limited/stats">
++                       AuthType Basic
++                       AuthName "Gimme Your Creds"
++                       AuthUserFile "/opt/secureworld/.htpasswd"
++                       Require valid-user
++                       Order allow,deny
++                       Allow from all
++           </Location>
+        </VirtualHost>
+ </IfModule>
+ 
+
+```
+<b>
+IMPORTANT NOTE: The credentials accessed over https is also used to authenticate
+on grafana end as well. So, ensure the username and password match.
+</b>
+
+Also See https://blog.raintank.io/authproxy-howto-use-external-authentication-handlers-with-grafana/
+I <b>DONOT</b> recommend that you auto signup users. Be careful who you let in your home aka your data..
+
 Setting up Linux screensaver with webpage
 ========================================
 Thanks to http://blog.kaiserapps.com/2014/02/how-to-set-webpage-as-screensaver-in.html
