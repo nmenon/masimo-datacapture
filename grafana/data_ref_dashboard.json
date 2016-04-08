@@ -12,7 +12,7 @@
     {
       "collapse": false,
       "editable": true,
-      "height": "200px",
+      "height": "150px",
       "panels": [
         {
           "aliasColors": {},
@@ -42,7 +42,7 @@
             "current": true,
             "max": true,
             "min": true,
-            "rightSide": false,
+            "rightSide": true,
             "show": true,
             "total": false,
             "values": true
@@ -56,7 +56,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 11,
+          "span": 12,
           "stack": false,
           "steppedLine": false,
           "targets": [
@@ -91,7 +91,7 @@
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Avg SPO2",
+          "title": "Oxygen Saturation(SPO2)",
           "tooltip": {
             "shared": true,
             "value_type": "cumulative"
@@ -103,78 +103,6 @@
             "short",
             "short"
           ]
-        },
-        {
-          "cacheTimeout": null,
-          "colorBackground": true,
-          "colorValue": false,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(22, 236, 40, 0.89)",
-            "rgba(123, 237, 10, 0.97)"
-          ],
-          "datasource": null,
-          "decimals": null,
-          "editable": true,
-          "error": false,
-          "format": "none",
-          "id": 4,
-          "interval": null,
-          "isNew": true,
-          "links": [],
-          "maxDataPoints": 100,
-          "nullPointMode": "connected",
-          "nullText": null,
-          "postfix": "%",
-          "postfixFontSize": "30%",
-          "prefix": "",
-          "prefixFontSize": "50%",
-          "span": 1,
-          "sparkline": {
-            "fillColor": "rgba(31, 123, 189, 0.18)",
-            "full": false,
-            "lineColor": "rgb(31, 120, 193)",
-            "show": true
-          },
-          "targets": [
-            {
-              "bucketAggs": [
-                {
-                  "field": "time",
-                  "id": "2",
-                  "settings": {
-                    "interval": "auto",
-                    "min_doc_count": 0
-                  },
-                  "type": "date_histogram"
-                }
-              ],
-              "dsType": "elasticsearch",
-              "metrics": [
-                {
-                  "field": "SPO2",
-                  "id": "1",
-                  "meta": {},
-                  "settings": {},
-                  "type": "avg"
-                }
-              ],
-              "refId": "A",
-              "timeField": "time"
-            }
-          ],
-          "thresholds": "0,93,98",
-          "title": "Current SPO2",
-          "type": "singlestat",
-          "valueFontSize": "70%",
-          "valueMaps": [
-            {
-              "op": "=",
-              "text": "N/A",
-              "value": "null"
-            }
-          ],
-          "valueName": "current"
         }
       ],
       "showTitle": false,
@@ -183,7 +111,7 @@
     {
       "collapse": false,
       "editable": true,
-      "height": "200px",
+      "height": "150px",
       "panels": [
         {
           "aliasColors": {},
@@ -207,11 +135,14 @@
           },
           "id": 5,
           "isNew": true,
+          "leftYAxisLabel": "",
           "legend": {
+            "alignAsTable": false,
             "avg": true,
             "current": true,
             "max": true,
             "min": true,
+            "rightSide": true,
             "show": true,
             "total": false,
             "values": true
@@ -225,11 +156,12 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 11,
+          "span": 12,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
+              "alias": "bpm",
               "bucketAggs": [
                 {
                   "field": "time",
@@ -257,7 +189,7 @@
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Avg BPM",
+          "title": "Heart Rate(BPM)",
           "tooltip": {
             "shared": true,
             "value_type": "cumulative"
@@ -269,77 +201,6 @@
             "short",
             "short"
           ]
-        },
-        {
-          "cacheTimeout": null,
-          "colorBackground": true,
-          "colorValue": false,
-          "colors": [
-            "rgba(232, 140, 232, 0.9)",
-            "rgba(48, 237, 40, 0.89)",
-            "rgba(172, 56, 45, 0.97)"
-          ],
-          "datasource": null,
-          "editable": true,
-          "error": false,
-          "format": "none",
-          "id": 6,
-          "interval": null,
-          "isNew": true,
-          "links": [],
-          "maxDataPoints": 100,
-          "nullPointMode": "connected",
-          "nullText": null,
-          "postfix": "bpm",
-          "postfixFontSize": "30%",
-          "prefix": "",
-          "prefixFontSize": "50%",
-          "span": 1,
-          "sparkline": {
-            "fillColor": "rgba(31, 44, 189, 0.18)",
-            "full": false,
-            "lineColor": "rgb(31, 120, 193)",
-            "show": true
-          },
-          "targets": [
-            {
-              "bucketAggs": [
-                {
-                  "field": "time",
-                  "id": "2",
-                  "settings": {
-                    "interval": "auto",
-                    "min_doc_count": 0
-                  },
-                  "type": "date_histogram"
-                }
-              ],
-              "dsType": "elasticsearch",
-              "metrics": [
-                {
-                  "field": "BPM",
-                  "id": "1",
-                  "meta": {},
-                  "settings": {},
-                  "type": "avg"
-                }
-              ],
-              "refId": "A",
-              "timeField": "time"
-            }
-          ],
-          "thresholds": "0,65,180",
-          "title": "Current BPM",
-          "type": "singlestat",
-          "valueFontSize": "50%",
-          "valueMaps": [
-            {
-              "op": "=",
-              "text": "N/A",
-              "value": "null"
-            }
-          ],
-          "valueName": "current"
         }
       ],
       "title": "Heart Rate"
@@ -350,7 +211,11 @@
       "height": "150px",
       "panels": [
         {
-          "aliasColors": {},
+          "aliasColors": {
+            "Average alm_spo2_low": "#E5A8E2",
+            "Average alm_triggered": "#58140C",
+            "Average exc_low_signal_iq": "#508642"
+          },
           "bars": false,
           "datasource": null,
           "editable": true,
@@ -368,14 +233,17 @@
             "threshold2": null,
             "threshold2Color": "rgba(234, 112, 112, 0.22)"
           },
+          "height": "",
           "id": 8,
           "isNew": true,
           "legend": {
+            "alignAsTable": false,
             "avg": false,
             "current": false,
             "hideZero": true,
             "max": false,
             "min": false,
+            "rightSide": false,
             "show": true,
             "total": false,
             "values": false
@@ -389,11 +257,12 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 11,
+          "span": 12,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
+              "alias": "",
               "bucketAggs": [
                 {
                   "field": "time",
@@ -455,6 +324,69 @@
                   "meta": {},
                   "settings": {},
                   "type": "avg"
+                },
+                {
+                  "field": "exc_ambient_light",
+                  "id": "9",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                },
+                {
+                  "field": "exc_interference",
+                  "id": "10",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                },
+                {
+                  "field": "exc_low_perfusion",
+                  "id": "11",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                },
+                {
+                  "field": "exc_low_signal_iq",
+                  "id": "12",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                },
+                {
+                  "field": "exc_pulse_search",
+                  "id": "13",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                },
+                {
+                  "field": "exc_sensor_defective",
+                  "id": "14",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                },
+                {
+                  "field": "exc_sensor_no",
+                  "id": "15",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                },
+                {
+                  "field": "exc_sensor_off",
+                  "id": "16",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                },
+                {
+                  "field": "exc_sensor_unrecognized",
+                  "id": "17",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
                 }
               ],
               "refId": "A",
@@ -463,7 +395,7 @@
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Alarm Flags",
+          "title": "Alarms and Exceptions",
           "tooltip": {
             "shared": true,
             "value_type": "cumulative"
@@ -475,21 +407,29 @@
             "percentunit",
             "percentunit"
           ]
-        },
+        }
+      ],
+      "title": "Exceptions"
+    },
+    {
+      "collapse": false,
+      "editable": true,
+      "height": "100px",
+      "panels": [
         {
           "cacheTimeout": null,
           "colorBackground": true,
           "colorValue": false,
           "colors": [
-            "rgba(50, 172, 45, 0.97)",
-            "rgba(237, 129, 40, 0.89)",
+            "rgba(5, 119, 0, 0.97)",
+            "rgba(243, 0, 0, 0.89)",
             "rgba(245, 54, 54, 0.9)"
           ],
           "datasource": null,
           "editable": true,
           "error": false,
           "format": "none",
-          "id": 9,
+          "id": 13,
           "interval": null,
           "isNew": true,
           "links": [],
@@ -502,9 +442,9 @@
           "prefixFontSize": "50%",
           "span": 1,
           "sparkline": {
-            "fillColor": "rgba(248, 200, 19, 0.18)",
+            "fillColor": "rgba(31, 118, 189, 0.18)",
             "full": false,
-            "lineColor": "rgb(255, 88, 4)",
+            "lineColor": "rgb(31, 120, 193)",
             "show": true
           },
           "targets": [
@@ -523,7 +463,7 @@
               "dsType": "elasticsearch",
               "metrics": [
                 {
-                  "field": "alarm",
+                  "field": "alm_triggered",
                   "id": "1",
                   "meta": {},
                   "settings": {},
@@ -535,7 +475,7 @@
             }
           ],
           "thresholds": "0,1",
-          "title": "Alarm",
+          "title": "Alarm Triggered",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -546,59 +486,38 @@
             }
           ],
           "valueName": "current"
-        }
-      ],
-      "title": "Exceptions"
-    },
-    {
-      "collapse": false,
-      "editable": true,
-      "height": "150px",
-      "panels": [
+        },
         {
-          "aliasColors": {},
-          "bars": false,
+          "cacheTimeout": null,
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(5, 126, 0, 0.97)",
+            "rgba(143, 76, 21, 0.89)",
+            "rgba(245, 54, 54, 0.9)"
+          ],
           "datasource": null,
           "editable": true,
           "error": false,
-          "fill": 1,
-          "grid": {
-            "leftLogBase": 1,
-            "leftMax": 1,
-            "leftMin": 0,
-            "rightLogBase": 1,
-            "rightMax": 1,
-            "rightMin": 0,
-            "threshold1": null,
-            "threshold1Color": "rgba(216, 200, 27, 0.27)",
-            "threshold2": 1,
-            "threshold2Color": "rgba(234, 112, 112, 0.22)",
-            "thresholdLine": true
-          },
-          "id": 7,
+          "format": "none",
+          "id": 12,
+          "interval": null,
           "isNew": true,
-          "legend": {
-            "avg": false,
-            "current": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 2,
           "links": [],
+          "maxDataPoints": 100,
           "nullPointMode": "connected",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 11,
-          "stack": false,
-          "steppedLine": false,
+          "nullText": null,
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "span": 1,
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": true
+          },
           "targets": [
             {
               "bucketAggs": [
@@ -615,64 +534,8 @@
               "dsType": "elasticsearch",
               "metrics": [
                 {
-                  "field": "exc_ambient_light",
-                  "id": "4",
-                  "meta": {},
-                  "settings": {},
-                  "type": "avg"
-                },
-                {
-                  "field": "exc_interference",
-                  "id": "5",
-                  "meta": {},
-                  "settings": {},
-                  "type": "avg"
-                },
-                {
-                  "field": "exc_low_perfusion",
-                  "id": "6",
-                  "meta": {},
-                  "settings": {},
-                  "type": "avg"
-                },
-                {
                   "field": "exc_low_signal_iq",
-                  "id": "7",
-                  "meta": {},
-                  "settings": {},
-                  "type": "avg"
-                },
-                {
-                  "field": "exc_pulse_search",
-                  "id": "8",
-                  "meta": {},
-                  "settings": {},
-                  "type": "avg"
-                },
-                {
-                  "field": "exc_sensor_defective",
-                  "id": "9",
-                  "meta": {},
-                  "settings": {},
-                  "type": "avg"
-                },
-                {
-                  "field": "exc_sensor_no",
-                  "id": "10",
-                  "meta": {},
-                  "settings": {},
-                  "type": "avg"
-                },
-                {
-                  "field": "exc_sensor_off",
-                  "id": "11",
-                  "meta": {},
-                  "settings": {},
-                  "type": "avg"
-                },
-                {
-                  "field": "exc_sensor_off",
-                  "id": "12",
+                  "id": "1",
                   "meta": {},
                   "settings": {},
                   "type": "avg"
@@ -682,27 +545,452 @@
               "timeField": "time"
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Exception Flags",
-          "tooltip": {
-            "shared": true,
-            "value_type": "cumulative"
-          },
-          "type": "graph",
-          "x-axis": true,
-          "y-axis": true,
-          "y_formats": [
-            "percentunit",
-            "percentunit"
-          ]
+          "thresholds": "0,0.001",
+          "title": "LowSignalIQ",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
         },
         {
           "cacheTimeout": null,
           "colorBackground": true,
           "colorValue": false,
           "colors": [
-            "rgba(50, 172, 45, 0.97)",
+            "rgba(4, 99, 0, 0.97)",
+            "rgba(10, 0, 248, 0.89)",
+            "rgba(245, 54, 54, 0.9)"
+          ],
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "format": "none",
+          "id": 11,
+          "interval": null,
+          "isNew": true,
+          "links": [],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "span": 1,
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": true
+          },
+          "targets": [
+            {
+              "bucketAggs": [
+                {
+                  "field": "time",
+                  "id": "2",
+                  "settings": {
+                    "interval": "auto",
+                    "min_doc_count": 0
+                  },
+                  "type": "date_histogram"
+                }
+              ],
+              "dsType": "elasticsearch",
+              "metrics": [
+                {
+                  "field": "alm_mute_pressed",
+                  "id": "1",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                }
+              ],
+              "refId": "A",
+              "timeField": "time"
+            }
+          ],
+          "thresholds": "0,1",
+          "title": "Mute",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(4, 112, 0, 0.97)",
+            "rgba(237, 40, 40, 0.89)",
+            "rgba(245, 54, 54, 0.9)"
+          ],
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "format": "none",
+          "id": 14,
+          "interval": null,
+          "isNew": true,
+          "links": [],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "span": 1,
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": true,
+            "lineColor": "rgb(193, 31, 31)",
+            "show": true
+          },
+          "targets": [
+            {
+              "bucketAggs": [
+                {
+                  "field": "time",
+                  "id": "2",
+                  "settings": {
+                    "interval": "auto",
+                    "min_doc_count": 0
+                  },
+                  "type": "date_histogram"
+                }
+              ],
+              "dsType": "elasticsearch",
+              "metrics": [
+                {
+                  "field": "alm_bpm_high",
+                  "id": "1",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                }
+              ],
+              "refId": "A",
+              "timeField": "time"
+            }
+          ],
+          "thresholds": "0,1",
+          "title": "BPM High",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(5, 120, 0, 0.97)",
+            "rgba(237, 40, 40, 0.89)",
+            "rgba(245, 54, 54, 0.9)"
+          ],
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "format": "none",
+          "id": 15,
+          "interval": null,
+          "isNew": true,
+          "links": [],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "span": 1,
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": true,
+            "lineColor": "rgb(193, 31, 31)",
+            "show": true
+          },
+          "targets": [
+            {
+              "bucketAggs": [
+                {
+                  "field": "time",
+                  "id": "2",
+                  "settings": {
+                    "interval": "auto",
+                    "min_doc_count": 0
+                  },
+                  "type": "date_histogram"
+                }
+              ],
+              "dsType": "elasticsearch",
+              "metrics": [
+                {
+                  "field": "alm_bpm_low",
+                  "id": "1",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                }
+              ],
+              "refId": "A",
+              "timeField": "time"
+            }
+          ],
+          "thresholds": "0,1",
+          "title": "BPM Low",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(4, 103, 0, 0.97)",
+            "rgba(237, 40, 40, 0.89)",
+            "rgba(245, 54, 54, 0.9)"
+          ],
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "format": "none",
+          "id": 16,
+          "interval": null,
+          "isNew": true,
+          "links": [],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "span": 1,
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": true,
+            "lineColor": "rgb(193, 31, 31)",
+            "show": true
+          },
+          "targets": [
+            {
+              "bucketAggs": [
+                {
+                  "field": "time",
+                  "id": "2",
+                  "settings": {
+                    "interval": "auto",
+                    "min_doc_count": 0
+                  },
+                  "type": "date_histogram"
+                }
+              ],
+              "dsType": "elasticsearch",
+              "metrics": [
+                {
+                  "field": "alm_spo2_low",
+                  "id": "1",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                }
+              ],
+              "refId": "A",
+              "timeField": "time"
+            }
+          ],
+          "thresholds": "0,1",
+          "title": "Low SPO2",
+          "transparent": false,
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(5, 122, 0, 0.97)",
+            "rgba(177, 80, 0, 0.89)",
+            "rgba(245, 54, 54, 0.9)"
+          ],
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "format": "none",
+          "id": 21,
+          "interval": null,
+          "isNew": true,
+          "links": [],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "span": 1,
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": true,
+            "lineColor": "rgb(0, 89, 161)",
+            "show": true
+          },
+          "targets": [
+            {
+              "bucketAggs": [
+                {
+                  "field": "time",
+                  "id": "2",
+                  "settings": {
+                    "interval": "auto",
+                    "min_doc_count": 0
+                  },
+                  "type": "date_histogram"
+                }
+              ],
+              "dsType": "elasticsearch",
+              "metrics": [
+                {
+                  "field": "exc_pulse_search",
+                  "id": "1",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                }
+              ],
+              "refId": "A",
+              "timeField": "time"
+            }
+          ],
+          "thresholds": "0,1",
+          "title": "Pulse Search",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(4, 106, 0, 0.97)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(245, 54, 54, 0.9)"
+          ],
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "format": "none",
+          "id": 17,
+          "interval": null,
+          "isNew": true,
+          "links": [],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "span": 1,
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": false
+          },
+          "targets": [
+            {
+              "bucketAggs": [
+                {
+                  "field": "time",
+                  "id": "2",
+                  "settings": {
+                    "interval": "auto",
+                    "min_doc_count": 0
+                  },
+                  "type": "date_histogram"
+                }
+              ],
+              "dsType": "elasticsearch",
+              "metrics": [
+                {
+                  "field": "alm_unknown",
+                  "id": "1",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                }
+              ],
+              "refId": "A",
+              "timeField": "time"
+            }
+          ],
+          "thresholds": "0,1",
+          "title": "Unknown Alarm",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(9, 117, 4, 0.97)",
             "rgba(237, 129, 40, 0.89)",
             "rgba(245, 54, 54, 0.9)"
           ],
@@ -770,6 +1058,220 @@
             }
           ],
           "valueName": "current"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(9, 113, 5, 0.97)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(245, 54, 54, 0.9)"
+          ],
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "format": "none",
+          "id": 9,
+          "interval": null,
+          "isNew": true,
+          "links": [],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "span": 1,
+          "sparkline": {
+            "fillColor": "rgba(248, 200, 19, 0.18)",
+            "full": false,
+            "lineColor": "rgb(255, 88, 4)",
+            "show": true
+          },
+          "targets": [
+            {
+              "bucketAggs": [
+                {
+                  "field": "time",
+                  "id": "2",
+                  "settings": {
+                    "interval": "auto",
+                    "min_doc_count": 0
+                  },
+                  "type": "date_histogram"
+                }
+              ],
+              "dsType": "elasticsearch",
+              "metrics": [
+                {
+                  "field": "alarm",
+                  "id": "1",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                }
+              ],
+              "refId": "A",
+              "timeField": "time"
+            }
+          ],
+          "thresholds": "0,1",
+          "title": "Alarm",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(6, 97, 13, 0.89)",
+            "rgba(56, 106, 6, 0.97)"
+          ],
+          "datasource": null,
+          "decimals": null,
+          "editable": true,
+          "error": false,
+          "format": "none",
+          "id": 4,
+          "interval": null,
+          "isNew": true,
+          "links": [],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "postfix": "%",
+          "postfixFontSize": "30%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "span": 1,
+          "sparkline": {
+            "fillColor": "rgba(31, 123, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": true
+          },
+          "targets": [
+            {
+              "bucketAggs": [
+                {
+                  "field": "time",
+                  "id": "2",
+                  "settings": {
+                    "interval": "auto",
+                    "min_doc_count": 0
+                  },
+                  "type": "date_histogram"
+                }
+              ],
+              "dsType": "elasticsearch",
+              "metrics": [
+                {
+                  "field": "SPO2",
+                  "id": "1",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                }
+              ],
+              "refId": "A",
+              "timeField": "time"
+            }
+          ],
+          "thresholds": "0,93,98",
+          "title": "SPO2",
+          "type": "singlestat",
+          "valueFontSize": "70%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": true,
+          "colorValue": false,
+          "colors": [
+            "rgba(232, 140, 232, 0.9)",
+            "rgba(13, 120, 9, 0.89)",
+            "rgba(172, 56, 45, 0.97)"
+          ],
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "format": "none",
+          "id": 6,
+          "interval": null,
+          "isNew": true,
+          "links": [],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "postfix": "bpm",
+          "postfixFontSize": "30%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "span": 1,
+          "sparkline": {
+            "fillColor": "rgba(31, 44, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": true
+          },
+          "targets": [
+            {
+              "bucketAggs": [
+                {
+                  "field": "time",
+                  "id": "2",
+                  "settings": {
+                    "interval": "auto",
+                    "min_doc_count": 0
+                  },
+                  "type": "date_histogram"
+                }
+              ],
+              "dsType": "elasticsearch",
+              "metrics": [
+                {
+                  "field": "BPM",
+                  "id": "1",
+                  "meta": {},
+                  "settings": {},
+                  "type": "avg"
+                }
+              ],
+              "refId": "A",
+              "timeField": "time"
+            }
+          ],
+          "thresholds": "0,65,180",
+          "title": "BPM",
+          "type": "singlestat",
+          "valueFontSize": "50%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
         }
       ],
       "title": "Alarm"
@@ -814,6 +1316,6 @@
   },
   "refresh": "5s",
   "schemaVersion": 8,
-  "version": 39,
+  "version": 49,
   "links": []
 }
