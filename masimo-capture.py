@@ -37,6 +37,8 @@ import MySQLdb
 import datetime
 # sudo pip install config
 from config import Config
+import pymysql
+
 
 class datastore_dump(object):
     spo2 = None
@@ -74,45 +76,47 @@ class datastore_dump(object):
 
     def _print_data(self):
         # Enable the following for printing purposes..
-        print "DATA @ " + str(datetime.datetime.now())
-        print "\tSPO2: %s\tBPM: %s\tPI: %s" % (self.spo2,
-              self.bpm, self.pi)
-        print "\tALARM: %s\t EXC: %s\t EXC1: %s" % (self.alarm,
-               self.exc, self.exc1)
+        print("DATA @ " + str(datetime.datetime.now()))
+        print("\tSPO2: %s\tBPM: %s\tPI: %s" % (self.spo2,
+                                               self.bpm, self.pi))
+        print("\tALARM: %s\t EXC: %s\t EXC1: %s" % (self.alarm,
+                                                    self.exc, self.exc1))
         if int(self.exc, 16) != 0:
             if (self.exc_unknown != 0):
-                exc_unknown_p = "\t Unknown Exception Code: 0x%08x \n" % (self.exc_unknown)
+                exc_unknown_p = "\t Unknown Exception Code: 0x%08x \n" % (
+                    self.exc_unknown)
             else:
                 exc_unknown_p = ""
 
-            print "\tException Decode: %s%s%s%s%s%s%s%s%s%s%s" %(
-            "No Sensor " if self.exc_sensor_no else "",
-            "Sensor Defective " if self.exc_sensor_defective else "",
-            "Low Perfusion " if self.exc_low_perfusion else "",
-            "Pulse Search " if self.exc_pulse_search else "",
-            "Interference " if self.exc_interference else "",
-            "Sensor OFF " if self.exc_sensor_off else "",
-            "Ambient Light " if self.exc_ambient_light else "",
-            "Sensor Unrecognized " if self.exc_sensor_unrecognized else "",
-            "Low Signal IQ " if self.exc_low_signal_iq else "",
-            "Masimo Set " if self.exc_masimo_set else "",
-            exc_unknown_p
-            )
+            print("\tException Decode: %s%s%s%s%s%s%s%s%s%s%s" % (
+                "No Sensor " if self.exc_sensor_no else "",
+                "Sensor Defective " if self.exc_sensor_defective else "",
+                "Low Perfusion " if self.exc_low_perfusion else "",
+                "Pulse Search " if self.exc_pulse_search else "",
+                "Interference " if self.exc_interference else "",
+                "Sensor OFF " if self.exc_sensor_off else "",
+                "Ambient Light " if self.exc_ambient_light else "",
+                "Sensor Unrecognized " if self.exc_sensor_unrecognized else "",
+                "Low Signal IQ " if self.exc_low_signal_iq else "",
+                "Masimo Set " if self.exc_masimo_set else "",
+                exc_unknown_p
+            ))
 
         if int(self.alarm, 16) != 0:
             if (self.alm_unknown != 0):
-                alm_unknown_p = "\t Unknown Alarm Code: 0x%08x \n" % (self.alm_unknown)
+                alm_unknown_p = "\t Unknown Alarm Code: 0x%08x \n" % (
+                    self.alm_unknown)
             else:
                 alm_unknown_p = ""
-            print "\tAlarm Decode: %s%s%s%s%s%s%s" %(
-                    "MUTED " if self.alm_mute_pressed else "",
-                    "TRIGGER " if self.alm_triggered else "",
-                    "BPM Low " if self.alm_bpm_low else "",
-                    "BPM High " if self.alm_bpm_high else "",
-                    "SPO2 Low " if self.alm_spo2_low else "",
-                    "SPO2 High " if self.alm_spo2_high else "",
-                    alm_unknown_p
-                    )
+            print("\tAlarm Decode: %s%s%s%s%s%s%s" % (
+                "MUTED " if self.alm_mute_pressed else "",
+                "TRIGGER " if self.alm_triggered else "",
+                "BPM Low " if self.alm_bpm_low else "",
+                "BPM High " if self.alm_bpm_high else "",
+                "SPO2 Low " if self.alm_spo2_low else "",
+                "SPO2 High " if self.alm_spo2_high else "",
+                alm_unknown_p
+            ))
 
     def parse_config(self, f):
         return
@@ -126,6 +130,7 @@ class datastore_dump(object):
     def store_data(self):
         self._print_data()
         return
+
 
 class datastore_mysql(datastore_dump):
     mysql_host = None
@@ -174,6 +179,7 @@ class datastore_mysql(datastore_dump):
             print("ERROR %d IN CONNECTION: %s" % (e.args[0], e.args[1]))
             print("Last query was: " + self.cur._last_executed)
 
+
 class datastore_elastic(datastore_dump):
     elastic_host = None
     elastic_port = None
@@ -198,56 +204,57 @@ class datastore_elastic(datastore_dump):
             from elasticsearch import Elasticsearch as Elasticsearch
             from time import gmtime, strftime
         except Exception as err:
-            raise Exception('elastic search Failed: "pip install elasticsearch"?', str(err))
+            raise Exception(
+                'elastic search Failed: "pip install elasticsearch"?',
+                str(err))
 
         return
 
     def connect(self):
         try:
-            self.es =  Elasticsearch([{'host': self.elastic_host,
-                                       'port': self.elastic_port}])
+            self.es = Elasticsearch([{'host': self.elastic_host,
+                                      'port': self.elastic_port}])
         except Exception as err:
             raise Exception('Elasticsearch connect failed :', str(err))
 
     def store_data(self):
 
-	l_time = time.localtime()
-        e_id=strftime("%Y%m%d%H%M%S", l_time)
-        e_time=strftime("%m-%d-%Y %H:%M:%S %Z", l_time)
+        l_time = time.localtime()
+        e_id = strftime("%Y%m%d%H%M%S", l_time)
+        e_time = strftime("%m-%d-%Y %H:%M:%S %Z", l_time)
         try:
-            self.es.index(index = self.elastic_idx,
-                 doc_type = self.elastic_table,
-                 id = e_id,
-                 body = {
-                    "time": str(e_time),
-                    "SPO2": int(self.spo2),
-                    "BPM": int(self.bpm),
-                    "PI": float(self.pi),
-                    "alarm": int(self.alarm, 16),
-                    "EXC": int(self.exc, 16),
-                    "EXC1": int(self.exc1, 16),
-                    "exc_sensor_no": int(self.exc_sensor_no),
-                    "exc_sensor_defective": int(self.exc_sensor_defective),
-                    "exc_low_perfusion": int(self.exc_low_perfusion),
-                    "exc_pulse_search": int(self.exc_pulse_search),
-                    "exc_interference": int(self.exc_interference),
-                    "exc_sensor_off": int(self.exc_sensor_off),
-                    "exc_ambient_light": int(self.exc_ambient_light),
-                    "exc_sensor_unrecognized": int(self.exc_sensor_unrecognized),
-                    "exc_low_signal_iq": int(self.exc_low_signal_iq),
-                    "exc_masimo_set": int(self.exc_masimo_set),
-                    "exc_unknown": int(self.exc_unknown),
-                    "alm_mute_pressed": int(self.alm_mute_pressed),
-                    "alm_triggered": int(self.alm_triggered),
-                    "alm_bpm_low": int(self.alm_bpm_low),
-                    "alm_bpm_high": int(self.alm_bpm_high),
-                    "alm_spo2_low": int(self.alm_spo2_low),
-                    "alm_spo2_high": int(self.alm_spo2_high),
-                    "alm_unknown": int(self.alm_unknown)
-                 })
+            self.es.index(index=self.elastic_idx,
+                          doc_type=self.elastic_table,
+                          id=e_id,
+                          body={
+                              "time": str(e_time),
+                              "SPO2": int(self.spo2),
+                              "BPM": int(self.bpm),
+                              "PI": float(self.pi),
+                              "alarm": int(self.alarm, 16),
+                              "EXC": int(self.exc, 16),
+                              "EXC1": int(self.exc1, 16),
+                              "exc_sensor_no": int(self.exc_sensor_no),
+                              "exc_sensor_defective": int(self.exc_sensor_defective),
+                              "exc_low_perfusion": int(self.exc_low_perfusion),
+                              "exc_pulse_search": int(self.exc_pulse_search),
+                              "exc_interference": int(self.exc_interference),
+                              "exc_sensor_off": int(self.exc_sensor_off),
+                              "exc_ambient_light": int(self.exc_ambient_light),
+                              "exc_sensor_unrecognized": int(self.exc_sensor_unrecognized),
+                              "exc_low_signal_iq": int(self.exc_low_signal_iq),
+                              "exc_masimo_set": int(self.exc_masimo_set),
+                              "exc_unknown": int(self.exc_unknown),
+                              "alm_mute_pressed": int(self.alm_mute_pressed),
+                              "alm_triggered": int(self.alm_triggered),
+                              "alm_bpm_low": int(self.alm_bpm_low),
+                              "alm_bpm_high": int(self.alm_bpm_high),
+                              "alm_spo2_low": int(self.alm_spo2_low),
+                              "alm_spo2_high": int(self.alm_spo2_high),
+                              "alm_unknown": int(self.alm_unknown)
+                          })
         except Exception as err:
-            print 'Elasticsearch data push failed :' + str(err)
-
+            print('Elasticsearch data push failed :' + str(err))
 
 
 class masimo:
@@ -265,7 +272,7 @@ class masimo:
 
     # Setup the dict
     def __init__(self, t="rad8s1", term=None,
-                 store = None):
+                 store=None):
         self.masimo_type = t
         self.store = store
 
@@ -326,7 +333,9 @@ class masimo:
             raise Exception('Data format error: PI is: ', self.store.v_pi)
 
         if self.store.v_alarm != "ALARM":
-            raise Exception('Data format error: ALARM is: ', self.store.v_alarm)
+            raise Exception(
+                'Data format error: ALARM is: ',
+                self.store.v_alarm)
 
         if self.store.v_exc != "EXC":
             raise Exception('Data format error: EXC is: ', self.store.v_exc)
@@ -370,7 +379,7 @@ class masimo:
         try:
             self.is_data_valid()
         except Exception as err:
-            print "Data invalid" + str(err)
+            print("Data invalid" + str(err))
 
     def store_data(self):
         # If we have no data to record, then why record?
@@ -379,8 +388,8 @@ class masimo:
         self.store.store_data()
         self.p_inc = self.p_inc + 1
         if self.p_inc is 10:
-            print ("Data(SPO2= %s BPM= %s) Stored at: %s" %
-                   (self.store.spo2, self.store.bpm, datetime.datetime.now()))
+            print("Data(SPO2= %s BPM= %s) Stored at: %s" %
+                  (self.store.spo2, self.store.bpm, datetime.datetime.now()))
             self.p_inc = 0
 
     def _parse_alarm(self):
@@ -495,47 +504,49 @@ class masimo:
     def _parse_rad8_serial_1(self):
         # 03/19/16 13:37:12 SN=0000093112 SPO2=---% BPM=---% DESAT=--
         # PIDELTA=+-- ALARM=0000 EXC=000001
-        S = self.serial_string.replace('=', ' ')
+        S1 = self.serial_string.decode(encoding='utf-8', errors='strict')
+        S = S1.replace('=', ' ')
         S = S.replace('%', ' ')
         ord = S.split(' ')
 
-        self.store.v_spo2 = MySQLdb.escape_string(ord[4])
-        self.store.v_bpm = MySQLdb.escape_string(ord[7])
-        self.store.v_pi = MySQLdb.escape_string(ord[9])
-        self.store.v_alarm = MySQLdb.escape_string(ord[22])
-        self.store.v_exc = MySQLdb.escape_string(ord[24])
+        self.store.v_spo2 = pymysql.escape_string(ord[4])
+        self.store.v_bpm = pymysql.escape_string(ord[7])
+        self.store.v_pi = pymysql.escape_string(ord[9])
+        self.store.v_alarm = pymysql.escape_string(ord[22])
+        self.store.v_exc = pymysql.escape_string(ord[24])
         self.store.v_exc1 = "EXC1"
 
-        self.store.spo2 = MySQLdb.escape_string(ord[5])
-        self.store.bpm = MySQLdb.escape_string(ord[8])
-        self.store.pi = MySQLdb.escape_string(ord[10])
-        self.store.alarm = MySQLdb.escape_string(ord[23])
-        self.store.exc = MySQLdb.escape_string(ord[25])
-        self.store.exc1 = MySQLdb.escape_string("00000000")
+        self.store.spo2 = pymysql.escape_string(ord[5])
+        self.store.bpm = pymysql.escape_string(ord[8])
+        self.store.pi = pymysql.escape_string(ord[10])
+        self.store.alarm = pymysql.escape_string(ord[23])
+        self.store.exc = pymysql.escape_string(ord[25])
+        self.store.exc1 = pymysql.escape_string("00000000")
 
     def _parse_rad7_color_serial_1(self):
         # 03/17/16 19:19:36 SN=---------- SPO2=098% BPM=123 PI=00.55 SPCO=--%
         # SPMET=--.-% SPHB=--.- SPOC=-- RESVD=--- DESAT=-- PIDELTA=+-- PVI=---
         # ALARM=000000 EXC=0000C00 EXC1=00000000
-        S = self.serial_string.replace('=', ' ')
+        S1 = self.serial_string.decode(encoding='utf-8', errors='strict')
+        S = S1.replace('=', ' ')
         S = S.replace('%', ' ')
         ord = S.split(' ')
 
-        self.store.v_spo2 = MySQLdb.escape_string(ord[4])
-        self.store.v_bpm = MySQLdb.escape_string(ord[7])
-        self.store.v_pi = MySQLdb.escape_string(ord[9])
-        self.store.v_alarm = MySQLdb.escape_string(ord[29])
-        self.store.v_exc = MySQLdb.escape_string(ord[31])
-        self.store.v_exc1 = MySQLdb.escape_string(ord[33])
+        self.store.v_spo2 = pymysql.escape_string(ord[4])
+        self.store.v_bpm = pymysql.escape_string(ord[7])
+        self.store.v_pi = pymysql.escape_string(ord[9])
+        self.store.v_alarm = pymysql.escape_string(ord[29])
+        self.store.v_exc = pymysql.escape_string(ord[31])
+        self.store.v_exc1 = pymysql.escape_string(ord[33])
 
-        self.store.spo2 = MySQLdb.escape_string(ord[5])
-        self.store.bpm = MySQLdb.escape_string(ord[8])
-        self.store.pi = MySQLdb.escape_string(ord[10])
+        self.store.spo2 = pymysql.escape_string(ord[5])
+        self.store.bpm = pymysql.escape_string(ord[8])
+        self.store.pi = pymysql.escape_string(ord[10])
         # have to find this experimentally
-        self.store.alarm = MySQLdb.escape_string(ord[30])
-        self.store.exc = MySQLdb.escape_string(ord[32])
+        self.store.alarm = pymysql.escape_string(ord[30])
+        self.store.exc = pymysql.escape_string(ord[32])
         # I dont seem to have data to decode this
-        self.store.exc1 = MySQLdb.escape_string(ord[34])
+        self.store.exc1 = pymysql.escape_string(ord[34])
 
     def _parse_rad_7_blue_serial_1(self):
         # http://www.infiniti.se/upload/Servicemanual/Masimo/SM_EN_RADICA7_Radical-7%20Service%20manual%20rev.A.pdf
@@ -553,13 +564,13 @@ class main:
     f = None
 
     def usage(self):
-        print "Usage:"
-        print sys.argv[0] + " -t type -d device -c config_file"
-        print "Where:"
-        print "\t-t: type of Masimo. One of: " + str(self.supported_types)
-        print "\t-d: serial_port device like /dev/ttyUSB0"
-        print "\t-c config_file (See config.cfg for example)"
-        print "\t\t NOTE: -t and -d will override settings in config file"
+        print("Usage:")
+        print(sys.argv[0] + " -t type -d device -c config_file")
+        print("Where:")
+        print("\t-t: type of Masimo. One of: " + str(self.supported_types))
+        print("\t-d: serial_port device like /dev/ttyUSB0")
+        print("\t-c config_file (See config.cfg for example)")
+        print("\t\t NOTE: -t and -d will override settings in config file")
 
     def import_config(self):
         # See https://www.red-dove.com/config-doc/
@@ -579,14 +590,14 @@ class main:
         except Exception as err:
             self.t = "rad8s1"
 
-        if db_type == "mysql" :
+        if db_type == "mysql":
             self.store = datastore_mysql()
-        elif db_type == "elasticsearch" :
+        elif db_type == "elasticsearch":
             self.store = datastore_elastic()
-        elif db_type == "dump" :
+        elif db_type == "dump":
             self.store = datastore_dump()
         else:
-            print "Invalid type " + db_type + " assuming terminal print"
+            print("Invalid type " + db_type + " assuming terminal print")
             # Default: assume terminal dump - but we should have
             # exception already..
             self.store = datastore_dump()
@@ -605,7 +616,7 @@ class main:
                     1:], "ht:d:c:", [
                     "help", "type=", "device=", "config_file="])
         except getopt.GetoptError as err:
-            print str(err)
+            print(str(err))
             self.usage()
             sys.exit(err)
 
@@ -614,7 +625,7 @@ class main:
 
         for o, a in opts:
             if o in ('-h', "--help"):
-                print "Help:"
+                print("Help:")
                 self.usage()
                 sys.exit(0)
             elif o in ('-t', "--type"):
@@ -628,7 +639,7 @@ class main:
                     raise Exception('Using Config file "' + a + '" Failed: ',
                                     str(err))
             else:
-                print o
+                print(o)
                 assert False, "unhandled Option"
 
         if self.f is not None:
@@ -638,19 +649,20 @@ class main:
                             'Use "' + sys.argv[0] + ' -h" for help')
 
         if self.term is None:
-            print "Need terminal device and type of masimo"
+            print("Need terminal device and type of masimo")
             self.usage()
             sys.exit(0)
         if self.t not in self.supported_types:
-            print "need a valid supported type"
+            print("need a valid supported type")
             self.usage()
             sys.exit(0)
 
         self.m = masimo(t=self.t,
                         term=self.term,
                         store=self.store)
+
     def main(self):
-        print "Capturing data..:"
+        print("Capturing data..:")
         while True:
             self.m.grab_data()
             # The following two steps may fail at times.. just move on..
@@ -658,7 +670,7 @@ class main:
                 self.m.parse_data()
                 self.m.store_data()
             except Exception as err:
-                print "Exception noticed: " + str(err)
+                print("Exception noticed: " + str(err))
 
 
 if __name__ == "__main__":
